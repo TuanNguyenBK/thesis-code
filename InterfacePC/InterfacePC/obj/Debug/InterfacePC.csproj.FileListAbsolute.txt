@@ -85,3 +85,15 @@ C:\Users\admin\Desktop\Code_New_version\InterfacePC\InterfacePC\obj\Debug\Interf
 C:\Users\admin\Desktop\Code_New_version\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.CopyComplete
 C:\Users\admin\Desktop\Code_New_version\InterfacePC\InterfacePC\obj\Debug\InterfacePC.exe
 C:\Users\admin\Desktop\Code_New_version\InterfacePC\InterfacePC\obj\Debug\InterfacePC.pdb
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\bin\Debug\InterfacePC.exe
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\bin\Debug\InterfacePC.pdb
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\bin\Debug\ZedGraph.dll
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\bin\Debug\ZedGraph.Web.dll
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csprojAssemblyReference.cache
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.Form1.resources
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.Properties.Resources.resources
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.GenerateResource.cache
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.CoreCompileInputs.cache
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.CopyComplete
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.exe
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.pdb

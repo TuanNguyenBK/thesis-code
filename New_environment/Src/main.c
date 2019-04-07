@@ -1,4 +1,35 @@
-
+/**
+  ******************************************************************************
+  * File Name          : main.c
+  * Description        : Main program body
+  ******************************************************************************
+  *
+  * COPYRIGHT(c) 2019 STMicroelectronics
+  *
+  * Redistribution and use in source and binary forms, with or without modification,
+  * are permitted provided that the following conditions are met:
+  *   1. Redistributions of source code must retain the above copyright notice,
+  *      this list of conditions and the following disclaimer.
+  *   2. Redistributions in binary form must reproduce the above copyright notice,
+  *      this list of conditions and the following disclaimer in the documentation
+  *      and/or other materials provided with the distribution.
+  *   3. Neither the name of STMicroelectronics nor the names of its contributors
+  *      may be used to endorse or promote products derived from this software
+  *      without specific prior written permission.
+  *
+  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  *
+  ******************************************************************************
+  */
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 
@@ -21,7 +52,7 @@ DMA_HandleTypeDef hdma_usart2_rx;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-uint8_t send_data[20], send_data_temp[20],i=0,receive_data[9],echo_receive_data[1],count=0;
+uint8_t send_data[20], send_data_temp[20],i=0,receive_data[11],echo_receive_data[1],count=0;
 char* data="92345\r";
 uint16_t duty0=0,duty1=0,duty2=0,duty3=0,tmp_duty3=0,duty4=0,tmp_duty4=0,C=0,D=0,Output=0,Output1=0;
 uint16_t start_hour=0,start_minute=0,time_out=0;
@@ -70,145 +101,25 @@ static void MX_TIM3_Init(void);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
                 
-void Motorpid(void);	
-void Motorpid_1(void);	
-void Duty_Config(void);
-void Sonic(void);
-void Go_Straight (void);
-void Go_Back (void);
-void Go_Left (void);
-void Go_Right (void);
-void Stop (void);
-void Send_Data(void);
-void Analyze_RecieveArray(void);
-void Zigziag_Mode(void);
 
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-uint8_t RTC_BCD2DEC(uint8_t e);
-uint8_t RTC_DEC2BCD(uint8_t e);
-void DEC_ASCII_3(uint16_t adc, uint8_t send_data_temp[20], uint8_t i);
-void DEC_ASCII_2(uint8_t num, uint8_t send_data_temp[20], uint8_t i);
-void I2C_WriteBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR, uint8_t sizebuf);
-void I2C_ReadBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR, uint8_t sizebuf);
-void RTC_GetTime(void);
-void RTC_SetTime(uint8_t hour,uint8_t min,uint8_t sec,uint8_t day,uint8_t date,uint8_t month,uint8_t year);
-
-void DEC_ASCII_3(uint16_t adc, uint8_t send_data_temp[20], uint8_t i)
-{
-	send_data_temp[i]=adc/100+48;
-	send_data_temp[i+1]=(adc%100)/10+48;
-	send_data_temp[i+2]=adc%10+48;
-}
-
-void DEC_ASCII_2(uint8_t num, uint8_t send_data_temp[20], uint8_t i)
-{
-	send_data_temp[i]=num/10+48;
-	send_data_temp[i+1]=num%10+48;
-}
-uint8_t RTC_BCD2DEC(uint8_t e)
-{
-	return (e>>4)*10 + (e&0x0F);
-}
-
-uint8_t RTC_DEC2BCD(uint8_t e)
-{
-	return (e/10)<<4 | (e%10);
-}
-
-void I2C_WriteBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR, uint8_t sizebuf)
-{
-	while (HAL_I2C_Master_Transmit(&hi, (uint16_t) DEV_ADDR, (uint8_t*) &DS3231.I2C_Buffer, (uint16_t) sizebuf, (uint32_t)1000))
-		{
-			if(HAL_I2C_GetError(&hi) != HAL_I2C_ERROR_AF)
-				{
-					printf("Write Buffer Error\r\n");
-				}
-		}
-}
-
-void I2C_ReadBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR, uint8_t sizebuf)
-{
-	while(HAL_I2C_Master_Receive(&hi, (uint16_t) DEV_ADDR, (uint8_t*) &DS3231.I2C_Buffer, (uint16_t) sizebuf, (uint32_t)1000))
-		{
-			if(HAL_I2C_GetError(&hi) != HAL_I2C_ERROR_AF)
-				{
-					printf("Read Buffer Error\r\n");
-				}
-		}
-}
-
-void RTC_GetTime(void)
-{
-	//Bat dau qua trinh nhan du lieu tu thanh ghi 0x00
-	DS3231.I2C_Buffer[0]=0x00;
-	I2C_WriteBuffer(hi2c1,(uint16_t) DS3231_ADD,1);
-	while (HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY);
-	I2C_ReadBuffer(hi2c1,(uint16_t) DS3231_ADD,7);
-	
-	DS3231.sec = RTC_BCD2DEC(DS3231.I2C_Buffer[0]);
-	DS3231.min = RTC_BCD2DEC(DS3231.I2C_Buffer[1]);
-	DS3231.hour = RTC_BCD2DEC(DS3231.I2C_Buffer[2]);
-	DS3231.day = RTC_BCD2DEC(DS3231.I2C_Buffer[3]);
-	DS3231.date = RTC_BCD2DEC(DS3231.I2C_Buffer[4]);
-	DS3231.month = RTC_BCD2DEC(DS3231.I2C_Buffer[5]);
-	DS3231.year = RTC_BCD2DEC(DS3231.I2C_Buffer[6]);
-}
-
-void RTC_SetTime(uint8_t hour,uint8_t min,uint8_t sec,uint8_t day,uint8_t date,uint8_t month,uint8_t year)
-{
-	DS3231.I2C_Buffer[0] = 0x00;
-	DS3231.I2C_Buffer[1] = RTC_DEC2BCD(sec);
-	DS3231.I2C_Buffer[2] = RTC_DEC2BCD(min);
-	DS3231.I2C_Buffer[3] = RTC_DEC2BCD(hour);
-	DS3231.I2C_Buffer[4] = RTC_DEC2BCD(day);
-	DS3231.I2C_Buffer[5] = RTC_DEC2BCD(date);
-	DS3231.I2C_Buffer[6] = RTC_DEC2BCD(month);
-	DS3231.I2C_Buffer[7] = RTC_DEC2BCD(year);
-	
-	I2C_WriteBuffer(hi2c1,(uint16_t) DS3231_ADD,8);
-	HAL_Delay(100);
-}
-
-void delay_us(uint16_t period){
-
-   __HAL_RCC_TIM6_CLK_ENABLE();
-     TIM6->PSC = 83;      // clk = SystemCoreClock /2/(PSC+1) = 1MHz
-     TIM6->ARR = period-1;
-     TIM6->CNT = 0;
-     TIM6->EGR = 1;      // update registers;
-
-     TIM6->SR  = 0;      // clear overflow flag
-     TIM6->CR1 = 1;      // enable Timer6
-
-     while (!TIM6->SR);
-    
-     TIM6->CR1 = 0;      // stop Timer6
-     //RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, DISABLE);
-   __HAL_RCC_TIM6_CLK_DISABLE();
-}
-void delay_01ms(uint16_t period){
-
-   __HAL_RCC_TIM6_CLK_ENABLE();
-     //RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
-     TIM6->PSC = 8399;      // clk = SystemCoreClock /2 /(PSC+1) = 10KHz
-     TIM6->ARR = period-1;
-     TIM6->CNT = 0;
-     TIM6->EGR = 1;      // update registers;
-
-     TIM6->SR  = 0;      // clear overflow flag
-     TIM6->CR1 = 1;      // enable Timer6
-
-     while (!TIM6->SR);
-    
-     TIM6->CR1 = 0;      // stop Timer6
-     //RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, DISABLE);
-   __HAL_RCC_TIM6_CLK_DISABLE();
-} 
+/* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 
+/* USER CODE END PFP */
+
+/* USER CODE BEGIN 0 */
+
+/* USER CODE END 0 */
 
 int main(void)
 {
+
+  /* USER CODE BEGIN 1 */
+
+  /* USER CODE END 1 */
+
+  /* MCU Configuration----------------------------------------------------------*/
+
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
@@ -224,275 +135,24 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
-	
-	 HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1);
-   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2);
-   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_3);
-   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_4);
-	 HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_1);
-	 HAL_TIM_Base_Start_IT(&htim2);
-	 HAL_UART_Receive_DMA(&huart2,receive_data,9);
 
+  /* USER CODE BEGIN 2 */
+
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		RTC_GetTime();		
-		HAL_ADC_Start_IT(&hadc1);
-		HAL_Delay(100);
-		HAL_ADC_Stop_IT(&hadc1);
-		//Analyze_RecieveArray();
-		Send_Data();
-		
-		des_Speed=400;					//set up setpoint PID
-		Kp=0.05;
-		Ki=0.01;
-		Kd=0;
-		duty4=200;
-		if (start==1)
-			{				
-				if(au==1&&run==1)
-				{								
-					Go_Straight();
-				}
-				
-				if(au==0)
-				{		duty3= tmp_duty3;duty4= tmp_duty4;
-						if(receive_data[0]=='t')Go_Left();		//trai
-						if(receive_data[0]=='p')Go_Right();		//phai
-						if(receive_data[0]=='h')Go_Straight();//di thang		
-						if(receive_data[0]=='d')Stop();				//dung lai
-						if(receive_data[0]=='l')Go_Back();		//di lui
-				}
-			}
+  /* USER CODE END WHILE */
 
+  /* USER CODE BEGIN 3 */
 
   }
   /* USER CODE END 3 */
 
 }
 
-void Send_Data(void)
-{
-		//send value
-		DEC_ASCII_3(adc_value*100/4096,send_data,0); //ADC value (battery)
-		DEC_ASCII_3(100-adc_value*100/4096,send_data,3); //COMPLETE VALUE
-		//send time
-		DEC_ASCII_2(DS3231.sec,send_data,6);		//second
-		DEC_ASCII_2(DS3231.min,send_data,8);		//minutes
-		DEC_ASCII_2(DS3231.hour,send_data,10);		//hours
-		DEC_ASCII_2(DS3231.date,send_data,12);		//day
-		DEC_ASCII_2(DS3231.month,send_data,14);		//month
-		send_data[17]= '\r';
-		HAL_UART_Transmit_IT(&huart2,(uint8_t  *)send_data,18);
-	
-}
-
-void Analyze_RecieveArray(void)
-{
-		if(receive_data[0]=='S')
-				{
-						start=1;report=0;tmp_duty4=200;
-						if(receive_data[1]=='L')tmp_duty3=250;					
-						if(receive_data[1]=='M')tmp_duty3=325;					
-						if(receive_data[1]=='H')tmp_duty3=400;					
-						if(receive_data[8]=='a')au=1;
-						if(receive_data[8]=='m')au=0;
-						  time_out=(receive_data[2]-48)*10+(receive_data[3]-48);
-							start_hour=(receive_data[4]-48)*10+(receive_data[5]-48);
-							start_minute=(receive_data[6]-48)*10+(receive_data[7]-48);
-							stop_hour=(start_hour*60+start_minute+time_out)/60;
-							stop_minute=(start_hour*60+start_minute+time_out)%60;
-				}		
-		if(receive_data[0]=='D')
-				{
-					start=0;
-					report=1;
-					Stop();
-					duty3=0;tmp_duty3=0;
-					duty4=0;tmp_duty4=0;						
-				}
-		send_data[16]='0';
-		if((DS3231.hour==start_hour&&DS3231.min==start_minute)||(start_hour==0&&start_minute==0))
-		{run=1;duty3=tmp_duty3;duty4=tmp_duty4;}
-		else if(DS3231.hour>=stop_hour&&DS3231.min>=stop_minute&&time_out!=0&&run==1)
-		{run=0;Stop();duty3=0;duty4=0;send_data[16]='s';}
-}
-
-void Zigziag_Mode(void)
-{				//Sonic();
-						if(HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 1 ||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1) == 0||HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_7) == 0|| Show<3)
-										 {
-											if(b==1)
-											 {Stop();HAL_Delay(1000);
-												 b=0;
-												 }
-											 Go_Back();	
-											  //HAL_Delay(2000);
-												a=1;											 
-										 }
-						 else 
-										 {
-											 if(a==1)
-												 {
-												Stop();HAL_Delay(1000);
-												Go_Left();HAL_Delay(2000);	
-												a=0;
-													}													 
-												Go_Straight();
-													b=1;
-										 }	
-}
-
-	
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-{
-	if(hadc->Instance == hadc1.Instance)
-	{
-			adc_value = HAL_ADC_GetValue(hadc);
-	}
-}
-
-void Go_Straight (void)
-{
-	motor1=1;motor2=1;
-//	duty0=200;duty2=200;
-}
-void Go_Back (void)
-{
-	motor3=1;
-//	duty1=200;
-}
-void Go_Left (void)
-{
-	motor1=1;
-//	duty0=200;
-}
-void Go_Right (void)
-{ 
-	motor2=1;
-//	duty2=200;
-}
-void Stop(void)
-{
-	motor1=0,motor2=0,motor3=0;	
-	duty0=0;duty1=0;duty2=0;	
-	Output=0;Output1=0;
-	
-}
-
-void Motorpid_1(void)
-{
-
-rSpeed=(Pulse-pre_Pulse)*300/400; //tinh van toc (trong sampling time)
-pre_Pulse=Pulse;
-Err=des_Speed-rSpeed;
-Output = Output+Kp*Err+Ki*Sampling_time*(Err+pre_Err)/(2000)+Kd*(Err-2*pre_Err+pre_pre_Err)*inv_Sampling_time;
-if (Output >700) Output=400;
-if (Output <=0) Output=0;
-if(motor1==1)duty1=Output;
-if (motor3==1)duty0=Output;
-if(motor1==0 && motor3==0)Output=0;
-//Duty_Config();
-pre_pre_Err= pre_Err;
-pre_Err=Err; 
-}
-
-void Motorpid_2(void)
-{
-rSpeed1=(Pulse1-pre_Pulse1)*300/400; //tinh van toc (trong sampling time)
-pre_Pulse1=Pulse1;
-Err1=des_Speed-rSpeed1;
-Output1 = Output1+Kp*Err1+Ki*Sampling_time*(Err1+pre_Err1)/(2000)+Kd*(Err1-2*pre_Err1+pre_pre_Err1)*inv_Sampling_time;
-if (Output1 >700) Output1=400;
-if (Output1 <=0) Output1=0;
-if(motor2==1)duty2=Output1;	
-if(motor2==0)Output1=0;
-//Duty_Config();
-pre_pre_Err1= pre_Err1;
-pre_Err1=Err1; 
-}
-
-
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-	if(htim->Instance==htim2.Instance)
-	{	
-		C=300*pulse/400;
-		D=300*pulse1/400;
-		Motorpid_1();	
-		Motorpid_2();
-		pulse=0;pulse1=0;
-		Duty_Config();	
-		//sample_count++;
-		//Duty_Config();		
-	}
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-		if(GPIO_Pin==GPIO_PIN_5)
-		{
-				Pulse++;
-				pulse++;
-					//while(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0));
-		}
-		if(GPIO_Pin==GPIO_PIN_4)
-		{
-				Pulse1++;
-				pulse1++;
-					//   HAL_GPIO_TogglePin(GPIOD,GPIO_PIN_13);
-				 //while(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_4));
-		}
-
-}
-
-
-void Duty_Config(void)
-{			__HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_1,duty0);		//motor driver
-      __HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_2,duty1);		//motor driver
-      __HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_3,duty2);		//motor driver
-      __HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_4,duty3);		//vacuum cleaner
-	
-			__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_1,duty4);		//motor clean
-}
-
-
-void Sonic(void)
-{
- HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
-     delay_us(2); //2 micro seconds
-       
-      //then we create a pulse for 10us
-         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
-         delay_us(10); 
-         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
-         
-         time=0;
-
-      while (HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_8) == 0);
-      while (HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_8))
-      {
-         time++;
-         delay_us(2); // delay 2 us
-         time_copy=time;
-         Distance=(float)(time_copy*0.0346);
-      }
-			  HAL_Delay(50);
-}
-
-
-
-/** System Clock Configuration
-*/
-
-
-/** System Clock Configuration
-*/
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
-           
 /** System Clock Configuration
 */
 void SystemClock_Config(void)
@@ -631,6 +291,8 @@ void MX_TIM3_Init(void)
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1);
 
+  HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2);
+
   HAL_TIM_MspPostInit(&htim3);
 
 }
@@ -680,7 +342,7 @@ void MX_USART2_UART_Init(void)
 {
 
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = 9600;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -752,11 +414,17 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB0 PB1 PB2 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2;
+  /*Configure GPIO pins : PB0 PB1 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PD9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7|GPIO_PIN_10|GPIO_PIN_15, GPIO_PIN_RESET);
