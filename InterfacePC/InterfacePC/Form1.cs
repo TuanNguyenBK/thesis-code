@@ -112,33 +112,33 @@ namespace InterfacePC
             {
                 //lbNhietDo.Text = UART.ReadTo("\r");
                 Tam = UART.ReadTo("\r");//nhan du lieu tu vdk gui len
-                //label1.Text = Tam;
-                
+                //label1.Text = Tam.Substring(4,3);
+
                 //read value
-                battery = Tam.Substring(0, 3);//tach so 
-                container = Tam.Substring(3, 3);
+                battery = Tam.Substring(1, 3);//tach so 
+                container = Tam.Substring(4,3);
                 //read time
-                second= Tam.Substring(6, 2);
-                minute = Tam.Substring(8, 2);
-                hour = Tam.Substring(10, 2);
-                day = Tam.Substring(12, 2);
-                month = Tam.Substring(14, 2);
-             
-                //trans to double
+                second = Tam.Substring(7, 2);
+                minute = Tam.Substring(9, 2);
+                hour = Tam.Substring(11, 2);
+                day = Tam.Substring(13, 2);
+                month = Tam.Substring(15, 2);
+
+                ////trans to double
                 Data[0] = Convert.ToDouble(battery);
                 Data[1] = Convert.ToDouble(container);
                 Data[2] = Convert.ToDouble(minute);
                 Data[3] = Convert.ToDouble(hour);
                 Data[4] = Convert.ToDouble(day);
                 Data[5] = Convert.ToDouble(month);
-                //trans to int 
+                ////trans to int 
                 char_battery.Value = Convert.ToInt16(Data[0]);
-                char_container.Value = Convert.ToInt16(Data[1]);
+                //char_container.Value = Convert.ToInt16(Data[1]);
                 //show time
                 txtHr.Text = hour;
                 txtMin.Text = minute;
                 txtSec.Text = second;
-                if (Tam.Substring(16, 1) == "s")
+                if (Tam.Substring(17, 1) == "s")
                 { btnDung_Click(sender,e); }
                 
 
@@ -275,6 +275,8 @@ namespace InterfacePC
                 Mode = "a";
                 lblwarn.Text = "THE MACHINE IS BEING IN AUTO MODE."; lblwarn.ForeColor = Color.DarkOrange;
                 //select start time
+                if (txtHour.Text == "") txtHour.Text = "00";
+                if (txtMinute.Text == "") txtMinute.Text = "00";
                 if (txtHour.Text == "00" && txtMinute.Text == "00")
                 { startHour = hour; startMin = minute; timeOut = 0; }
                 else
@@ -291,16 +293,6 @@ namespace InterfacePC
                 return;
             }
             #endregion
-
-            //change state of button
-            lblwarning.Text = "";
-            btnChay.Text = "STARTED";          
-            btnDung.Enabled = true; btnDung.BackColor = Color.Teal;
-            btnChay.Enabled = false; btnChay.BackColor = Color.Green;
-            //disable Setting
-            chbxAuto.Enabled = false; chbxMan.Enabled = false;
-            cbxLevel.Enabled = false; cbxTime.Enabled = false;
-            btnTime.Enabled = false; btnTime.BackColor = Color.FromArgb(33, 42, 52); P8.Hide();
 
             #region select level vaccum
             //select level for vaccum
@@ -328,7 +320,15 @@ namespace InterfacePC
             UART.Write(data);
             timer1.Enabled = true;
             #endregion
-
+            //change state of button
+            lblwarning.Text = "";
+            btnChay.Text = "STARTED";
+            btnDung.Enabled = true; btnDung.BackColor = Color.Teal;
+            btnChay.Enabled = false; btnChay.BackColor = Color.Green;
+            //disable Setting
+            chbxAuto.Enabled = false; chbxMan.Enabled = false;
+            cbxLevel.Enabled = false; cbxTime.Enabled = false;
+            btnTime.Enabled = false; btnTime.BackColor = Color.FromArgb(33, 42, 52); P8.Hide();
             reportPage();
         }
         #endregion
@@ -661,10 +661,10 @@ namespace InterfacePC
         {
             set1 = Data[0];
             double temp = tempHour * 60 + tempMinute - Data[3] * 60 - Data[2];
-            if (timeOut == 1&& temp>0)
+            if (timeOut == 1 && temp > 0)
             {
-                lblhour.Text = string.Format("{0:00}",Convert.ToInt16(temp / 60 - 0.5)) + " hrs";
-                lblminute.Text = string.Format("{0:00}",(temp % 60)) + " mins";
+                lblhour.Text = string.Format("{0:00}", Convert.ToInt16(temp / 60 - 0.5)) + " hrs";
+                lblminute.Text = string.Format("{0:00}", (temp % 60)) + " mins";
             }
             else
             {

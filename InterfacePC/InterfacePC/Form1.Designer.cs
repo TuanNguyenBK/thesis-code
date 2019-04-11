@@ -1671,7 +1671,11 @@
             this.Controls.Add(this.panel5);
             this.Font = new System.Drawing.Font("Lucida Sans Unicode", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
+<<<<<<< HEAD
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+=======
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+>>>>>>> 81047704360078939bb7e6082e6e0b33bbfb1c34
             this.KeyPreview = true;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";

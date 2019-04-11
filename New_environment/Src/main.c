@@ -54,16 +54,23 @@ DMA_HandleTypeDef hdma_usart2_rx;
 /* Private variables ---------------------------------------------------------*/
 uint8_t send_data[20], send_data_temp[20],i=0,receive_data[11],echo_receive_data[1],count=0;
 char* data="92345\r";
-uint16_t duty0=0,duty1=0,duty2=0,duty3=0,tmp_duty3=0,duty4=0,tmp_duty4=0,C=0,D=0,Output=0,Output1=0;
+uint16_t duty0=0,duty1=0,duty2=0,duty3=0,duty4=0,tmp_duty4=0,duty5=0,tmp_duty5=0,C=0,D=0,Output=0,Output1=0;
+uint16_t Output2=0,Output3=0;
 uint16_t start_hour=0,start_minute=0,time_out=0;
-uint32_t pre_Pulse=0,Pulse=0,pulse=0,p=500,TocDoDat=0,Sampling_time=200,inv_Sampling_time=5;
-uint32_t pre_Pulse1=0,Pulse1=0,pulse1=0,p1=500,TocDoDat1=0,time_copy=0,time=0;
-uint32_t pre_Pulse2=0,Pulse2=0,pulse2=0,p2=500,TocDoDat2=0;
+uint32_t pre_Pulse=0,Pulse=0,pulse=0,p=0,TocDoDat=0,Sampling_time=20,inv_Sampling_time=50;
+uint32_t pre_Pulse1=0,Pulse1=0,pulse1=0,p1=0,TocDoDat1=0,time_copy=0,time=0;
+
 float Distance,Show = 0,Kp,Ki,Kd;
-signed long des_Speed=400,rSpeed=0,Err=0,pre_Err=0,pre_pre_Err=0;
+float Kp_Pos,Ki_Pos,Kd_Pos;
+signed long des_Speed=400,des_Position=700;
+signed long	rSpeed=0,Err=0,pre_Err=0,pre_pre_Err=0;
 signed long rSpeed1=0,Err1=0,pre_Err1=0,pre_pre_Err1=0;
-signed long rSpeed2=0,Err2=0,pre_Err2=0,pre_pre_Err2=0;
-int start=0,run=0,sample_count=0,au=0,motor1=0,motor2=0,motor3=0,a=0,b=0,report=0,one_loop=0;
+//Position
+signed long Err2=0,pre_Err2=0,pre_pre_Err2=0,pros2=0,loop=0;
+signed long Err3=0,pre_Err3=0,pre_pre_Err3=0,pros3=0,loop1=0;
+
+int start=0,run=0,sample_count=0,au=0,motor_left=0,motor_right=0,motor_straight=0,motor_back=0;
+int	Deg_90_left=0,Deg_90_right=0,left=0,right=0,a=0,stop1=0,stop2=0,report=0,b=0;
 uint16_t stop_hour=0,stop_minute=0;
 uint16_t adc_value,adc;
 #define DS3231_ADD (0x68<<1)
@@ -100,7 +107,52 @@ static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+<<<<<<< HEAD
+
+void Motorpid_2(void);	
+void Motorpid_1(void);
+void Motor_Left_Position_PID(void);
+void Motor_Right_Position_PID(void);
+void Duty_Config(void);
+void Sonic(void);
+void Go_Straight (void);
+void Go_Back (void);
+void Go_Left (void);
+void Go_Right (void);
+void Stop (void);
+void Send_Data(void);
+void Analyze_RecieveArray(void);
+void Zigziag_Mode(void);
+
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+uint8_t RTC_BCD2DEC(uint8_t e);
+uint8_t RTC_DEC2BCD(uint8_t e);
+void DEC_ASCII_3(uint16_t adc, uint8_t send_data_temp[20], uint8_t i);
+void DEC_ASCII_2(uint8_t num, uint8_t send_data_temp[20], uint8_t i);
+void I2C_WriteBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR, uint8_t sizebuf);
+void I2C_ReadBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR, uint8_t sizebuf);
+void RTC_GetTime(void);
+void RTC_SetTime(uint8_t hour,uint8_t min,uint8_t sec,uint8_t day,uint8_t date,uint8_t month,uint8_t year);
+
+void DEC_ASCII_3(uint16_t adc, uint8_t send_data_temp[20], uint8_t i)
+{
+	send_data_temp[i]=adc/100+48;
+	send_data_temp[i+1]=(adc%100)/10+48;
+	send_data_temp[i+2]=adc%10+48;
+}
+
+void DEC_ASCII_2(uint8_t num, uint8_t send_data_temp[20], uint8_t i)
+{
+	send_data_temp[i]=num/10+48;
+	send_data_temp[i+1]=num%10+48;
+}
+uint8_t RTC_BCD2DEC(uint8_t e)
+{
+	return (e>>4)*10 + (e&0x0F);
+}
+=======
                 
+>>>>>>> 81047704360078939bb7e6082e6e0b33bbfb1c34
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -120,6 +172,38 @@ int main(void)
 
   /* MCU Configuration----------------------------------------------------------*/
 
+<<<<<<< HEAD
+     while (!TIM6->SR);
+    
+     TIM6->CR1 = 0;      // stop Timer6
+     //RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, DISABLE);
+   __HAL_RCC_TIM6_CLK_DISABLE();
+}
+void delay_01ms(uint16_t period){
+
+   __HAL_RCC_TIM6_CLK_ENABLE();
+     //RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
+     TIM6->PSC = 8399;      // clk = SystemCoreClock /2 /(PSC+1) = 10KHz
+     TIM6->ARR = period-1;
+     TIM6->CNT = 0;
+     TIM6->EGR = 1;      // update registers;
+
+     TIM6->SR  = 0;      // clear overflow flag
+     TIM6->CR1 = 1;      // enable Timer6
+
+     while (!TIM6->SR);
+    
+     TIM6->CR1 = 0;      // stop Timer6
+     //RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, DISABLE);
+   __HAL_RCC_TIM6_CLK_DISABLE();
+} 
+/* Private function prototypes -----------------------------------------------*/
+
+int main(void)
+{
+
+=======
+>>>>>>> 81047704360078939bb7e6082e6e0b33bbfb1c34
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
@@ -135,26 +219,358 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
+<<<<<<< HEAD
+
+  /* USER CODE BEGIN 2 */
+	 HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1);
+   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2);
+   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_3);
+   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_4);
+	 HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_1);
+	 HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_2);
+	 HAL_TIM_Base_Start_IT(&htim2);
+	 HAL_UART_Receive_DMA(&huart2,receive_data,11);
+
+  /* USER CODE END 2 */
+
+=======
 
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
 
+>>>>>>> 81047704360078939bb7e6082e6e0b33bbfb1c34
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+<<<<<<< HEAD
+		RTC_GetTime();		
+		HAL_ADC_Start_IT(&hadc1);
+		HAL_Delay(100);
+		HAL_ADC_Stop_IT(&hadc1);
+		Analyze_RecieveArray();
+		Send_Data();
+		
+		des_Speed=30;					//set up setpoint PID
+		Kp=0.05;Ki=0.5;Kd=0.0001;	
+		des_Position=750;		
+		Kp_Pos=0.3;Ki_Pos=0.08;Kd_Pos=0;
+		//Zigziag_Mode();
+		if (start==1)
+			{				
+				if(au==1&&run==1)
+				{								
+						Zigziag_Mode();
+				}
+				
+				if(au==0)
+				{		duty5= tmp_duty5;duty4= tmp_duty4;
+						if(receive_data[0]=='t')Go_Left();		//trai
+						if(receive_data[0]=='p')Go_Right();		//phai
+						if(receive_data[0]=='h')Go_Straight();//di thang		
+						if(receive_data[0]=='d')Stop();				//dung lai
+						if(receive_data[0]=='l')Go_Back();		//di lui
+				}
+			}
+=======
   /* USER CODE END WHILE */
+>>>>>>> 81047704360078939bb7e6082e6e0b33bbfb1c34
 
   /* USER CODE BEGIN 3 */
 
   }
-  /* USER CODE END 3 */
+}
+
+<<<<<<< HEAD
+
+void Send_Data(void)
+{
+		//send value
+		DEC_ASCII_3(adc_value*100/4096,send_data,0); //ADC value (battery)
+		DEC_ASCII_3(100-adc_value*100/4096,send_data,3); //COMPLETE VALUE
+		//send time
+		DEC_ASCII_2(DS3231.sec,send_data,6);		//second
+		DEC_ASCII_2(DS3231.min,send_data,8);		//minutes
+		DEC_ASCII_2(DS3231.hour,send_data,10);		//hours
+		DEC_ASCII_2(DS3231.date,send_data,12);		//day
+		DEC_ASCII_2(DS3231.month,send_data,14);		//month
+		send_data[17]= '\r';
+		HAL_UART_Transmit_IT(&huart2,(uint8_t  *)send_data,18);
+	
+}
+
+void Analyze_RecieveArray(void)
+{
+		if(receive_data[0]=='S')
+				{
+						start=1;report=0;tmp_duty4=90;
+						if(receive_data[1]=='L')tmp_duty5=250;					
+						if(receive_data[1]=='M')tmp_duty5=325;					
+						if(receive_data[1]=='H')tmp_duty5=400;					
+						if(receive_data[8]=='a')au=1;
+						if(receive_data[8]=='m')au=0;
+						  time_out=(receive_data[2]-48)*10+(receive_data[3]-48);
+							start_hour=(receive_data[4]-48)*10+(receive_data[5]-48);
+							start_minute=(receive_data[6]-48)*10+(receive_data[7]-48);
+							stop_hour=(start_hour*60+start_minute+time_out)/60;
+							stop_minute=(start_hour*60+start_minute+time_out)%60;
+				}		
+		if(receive_data[0]=='D')
+				{
+					start=0;
+					report=1;
+					Stop();run=0;
+					duty5=0;tmp_duty5=0;
+					duty4=0;tmp_duty4=0;						
+				}
+		send_data[16]='0';
+		if(au==1)
+		{
+					if((DS3231.hour==start_hour&&DS3231.min==start_minute)||(start_hour==0&&start_minute==0))
+					{run=1;duty5=tmp_duty5;duty4=tmp_duty4;}
+					else if(DS3231.hour>=stop_hour&&DS3231.min>=stop_minute&&time_out!=0&&run==1)
+					{run=0;Stop();duty5=0;duty4=0;send_data[16]='s';}							
+		}
+}
+
+void Zigziag_Mode(void)
+{				//Sonic();||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1) == 0||HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_9) == 0
+	
+						if(HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 0 )
+									{
+										if(stop1==1)
+											 {Stop();HAL_Delay(1000);
+												stop1=0;
+												 	if(a==1)
+														{left=1;right=0;a=1-a;}
+													else	
+														{left=0,right=1;a=1-a;}
+												}
+										Go_Back();stop2=1;		
+																																	
+									}
+						 else 
+									{
+										if(stop2==1)
+										{Stop();HAL_Delay(1000);
+										 stop2=0;
+										}
+										if(left==1)Deg_90_left=1;																						
+										else if(right==1)Deg_90_right=1;
+										else	
+										{Go_Straight();stop1=1;}
+										}	
+}
+	
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	if(hadc->Instance == hadc1.Instance)
+	{
+			adc_value = HAL_ADC_GetValue(hadc);
+	}
+}
+
+void Go_Straight (void)
+{
+	motor_straight=1;motor_back=0;motor_left=0;motor_right=0;
+}
+void Go_Back (void)
+{
+		motor_straight=0;motor_back=1;motor_left=0;motor_right=0;
+}
+void Go_Left (void)
+{
+		motor_straight=0;motor_back=0;motor_left=1;motor_right=0;
+}
+void Go_Right (void)
+{ 
+			motor_straight=0;motor_back=0;motor_left=0;motor_right=1;
+}
+void Stop(void)
+{
+	motor_straight=0;motor_back=0;motor_left=0;motor_right=0;
+	Deg_90_left=0;Deg_90_right=0;
+	duty0=0;duty1=0;duty2=0;duty3=0;	
+	Output=0;Output1=0;Pulse=0;Pulse1=0;
+	pre_pre_Err= 0;pre_Err=0; 
+	pre_pre_Err1= 0;pre_Err1=0;
+	pre_pre_Err2= 0;pre_Err2=0;
+}
+
+void Motorpid_1(void)
+{
+rSpeed=(p-pre_Pulse)*3000/400; //tinh van toc (trong sampling time)
+pre_Pulse=p;
+Err=des_Speed-rSpeed;
+Output = Output+Kp*Err+Ki*Sampling_time*(Err+pre_Err)/(2000)+Kd*(Err-2*pre_Err+pre_pre_Err)*inv_Sampling_time;
+if (Output >400) Output=400;
+if (Output <=0) Output=0;
+if(motor_straight==0 && motor_back==0 && motor_right==0)Output=0;
+if(motor_straight==1)
+{duty0=Output;duty1=0;}
+if(motor_back==1||motor_right==1)
+{duty1=Output;duty0=0;}
+pre_pre_Err= pre_Err;
+pre_Err=Err; 
+}
+
+void Motorpid_2(void)
+{
+rSpeed1=(p1-pre_Pulse1)*3000/400; //tinh van toc (trong sampling time)
+pre_Pulse1=p1;
+Err1=des_Speed-rSpeed1;
+Output1 = Output1+Kp*Err1+Ki*Sampling_time*(Err1+pre_Err1)/(2000)+Kd*(Err1-2*pre_Err1+pre_pre_Err1)*inv_Sampling_time;
+if (Output1 >400) Output1=400;
+if (Output1 <=0) Output1=0;
+if(motor_straight==0 && motor_back==0&&motor_left==0)Output1=0;
+if(motor_straight==1)
+{duty2=Output1;duty3=0;}
+if(motor_back==1||motor_left==1)
+{duty3=Output1;duty2=0;}
+pre_pre_Err1= pre_Err1;
+pre_Err1=Err1; 
+}
+
+
+void Motor_Left_Position_PID(void)
+{
+Err2=des_Position-Pulse1;
+if(Err2<0)
+{
+Err2=-Err2;
+pros2=1;
+loop=1;Output2=100;
+}
+else if(Err2>-3&&loop==1)
+{pros2=0;Deg_90_left=0;
+duty2=0;left=0;loop=0;}
+Output2 = Output2+Kp_Pos*Err2+Ki_Pos*Sampling_time*(Err2+pre_Err2)/(2000)+Kd_Pos*(Err2-2*pre_Err2+pre_pre_Err2)*inv_Sampling_time;
+if (Output2 >140) Output2=140;
+if (Output2 <=0) Output2=0;
+if(Deg_90_left==1&&pros2==0)
+{duty3=Output2;duty2=0;}
+else if(Deg_90_left==1&&pros2==1)
+{duty3=0;duty2=Output2;}
+if(Deg_90_left==0)
+{Output2=0;Pulse1=0;}
+pre_pre_Err2= pre_Err2;
+pre_Err2=Err2; 
+}
+
+void Motor_Right_Position_PID(void)
+{
+Err3=des_Position-Pulse;
+if(Err3<0)
+{
+Err3=-Err3;
+pros3=1;
+loop1=1;Output3=80;
+}
+else if(Err3>-3&&loop1==1)
+{pros3=0;Deg_90_right=0;
+duty0=0;right=0;loop1=0;}
+Output3 = Output3+Kp_Pos*Err2+Ki_Pos*Sampling_time*(Err2+pre_Err2)/(2000)+Kd_Pos*(Err2-2*pre_Err2+pre_pre_Err2)*inv_Sampling_time;
+if (Output3 >140) Output3=140;
+if (Output3 <=0) Output3=0;
+if(Deg_90_right==1&&pros3==0)
+{duty1=Output3;duty0=0;}
+else if(Deg_90_right==1&&pros3==1)
+{duty1=0;duty0=Output3;}
+if(Deg_90_right==0)
+{Output3=0;Pulse=0;}
+pre_pre_Err3= pre_Err3;
+pre_Err3=Err3; 
+}
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if(htim->Instance==htim2.Instance)
+	{	
+		C=3000*pulse/400;
+		D=3000*pulse1/400;
+		if(motor_straight==1||motor_back==1||motor_left==1||motor_right==1)
+		{
+		Motorpid_1();	
+		Motorpid_2();}
+		else
+		{
+		Motor_Left_Position_PID();
+		Motor_Right_Position_PID();
+		}
+		pulse=0;pulse1=0;
+		Duty_Config();	
+	
+	}
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+		if(GPIO_Pin==GPIO_PIN_5)
+		{
+			pulse++;p++;
+			if(Deg_90_right==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_11) == 1)Pulse++;
+			if(Deg_90_right==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_11) == 0)Pulse--;
+//			if(HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_11) == 1)Pulse++;
+//			if(HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_11) == 0)Pulse--;
+					//while(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0));
+		}
+		if(GPIO_Pin==GPIO_PIN_4)
+		{
+			pulse1++;p1++;
+			if(Deg_90_left==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12) == 0)Pulse1++;
+			if(Deg_90_left==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12) == 1)Pulse1--;
+//			if(HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12) == 0)Pulse1++;
+//			if(HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12) == 1)Pulse1--;
+		}
+		
+				if(GPIO_Pin==GPIO_PIN_0)
+		{
+			Deg_90_right=1;
+		}		
 
 }
 
+
+void Duty_Config(void)
+{			__HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_1,duty0);		//motor driver
+      __HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_2,duty1);		//motor driver
+      __HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_3,duty2);		//motor driver
+      __HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_4,duty3);		//motor driver
+	
+			__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_1,duty4);		//motor clean
+			__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_2,duty5);	
+}
+
+
+void Sonic(void)
+{
+ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
+     delay_us(2); //2 micro seconds
+       
+      //then we create a pulse for 10us
+         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
+         delay_us(10); 
+         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
+         
+         time=0;
+
+      while (HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_8) == 0);
+      while (HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_8))
+      {
+         time++;
+         delay_us(2); // delay 2 us
+         time_copy=time;
+         Distance=(float)(time_copy*0.0346);
+      }
+			  HAL_Delay(50);
+}
+
+
+
+=======
 /** System Clock Configuration
 */
+>>>>>>> 81047704360078939bb7e6082e6e0b33bbfb1c34
 void SystemClock_Config(void)
 {
 
@@ -248,7 +664,7 @@ void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 42000;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 1999;
+  htim2.Init.Period = 39;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_Base_Init(&htim2);
 
@@ -420,6 +836,14 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+<<<<<<< HEAD
+	GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	
+=======
+>>>>>>> 81047704360078939bb7e6082e6e0b33bbfb1c34
   /*Configure GPIO pin : PD9 */
   GPIO_InitStruct.Pin = GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;

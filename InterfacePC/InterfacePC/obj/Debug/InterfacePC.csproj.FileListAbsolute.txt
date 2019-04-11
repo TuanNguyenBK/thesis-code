@@ -85,6 +85,20 @@ C:\Users\admin\Desktop\Code_New_version\InterfacePC\InterfacePC\obj\Debug\Interf
 C:\Users\admin\Desktop\Code_New_version\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.CopyComplete
 C:\Users\admin\Desktop\Code_New_version\InterfacePC\InterfacePC\obj\Debug\InterfacePC.exe
 C:\Users\admin\Desktop\Code_New_version\InterfacePC\InterfacePC\obj\Debug\InterfacePC.pdb
+<<<<<<< HEAD
+C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\bin\Debug\InterfacePC.exe
+C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\bin\Debug\InterfacePC.pdb
+C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\bin\Debug\ZedGraph.dll
+C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\bin\Debug\ZedGraph.Web.dll
+C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csprojAssemblyReference.cache
+C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfacePC.Form1.resources
+C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfacePC.Properties.Resources.resources
+C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.GenerateResource.cache
+C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.CoreCompileInputs.cache
+C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.CopyComplete
+C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfacePC.exe
+C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfacePC.pdb
+=======
 D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\bin\Debug\InterfacePC.exe
 D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\bin\Debug\InterfacePC.pdb
 D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\bin\Debug\ZedGraph.dll
@@ -97,3 +111,4 @@ D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.c
 D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.CopyComplete
 D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.exe
 D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.pdb
+>>>>>>> 81047704360078939bb7e6082e6e0b33bbfb1c34
