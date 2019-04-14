@@ -1,10 +1,5 @@
-
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
@@ -19,7 +14,6 @@ TIM_HandleTypeDef htim4;
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_rx;
 
-/* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 uint8_t send_data[20], send_data_temp[20],i=0,receive_data[11],echo_receive_data[1],count=0;
 char* data="92345\r";
@@ -42,6 +36,8 @@ int start=0,run=0,sample_count=0,au=0,motor_left=0,motor_right=0,motor_straight=
 int	Deg_90_left=0,Deg_90_right=0,left=0,right=0,a=0,stop1=1,stop2=0,stop3=0,report=0,b=0,cont=0;
 uint16_t stop_hour=0,stop_minute=0;
 uint16_t adc_value,adc;
+
+	//RTC DS3231
 #define DS3231_ADD (0x68<<1)
 #define DS3231_REG_TIME (0X00)
 #define DS3231_REG_ALARM1 (0x07)
@@ -62,7 +58,24 @@ uint8_t year;
 uint8_t I2C_Buffer[8];
 }DS3231_t;
 DS3231_t DS3231;
-/* USER CODE END PV */
+
+	//Compass MQC5883
+#define QMC5883_ADDR             		 (0x0D<<1)
+#define QMC5883_REG_STATUS           (0x06)
+#define QMC5883_REG_CONFIG_1         (0x09)
+#define QMC5883_REG_CONFIG_2         (0x0A)
+#define QMC5883_REG_IDENT_B          (0x0B)
+
+typedef struct{
+int16_t x;
+int16_t y;
+int16_t z;
+
+
+uint8_t I2C_Buffer_Write[2];
+uint8_t I2C_Buffer_Read[6];
+}QMC5883_t;
+QMC5883_t QMC5883;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -97,10 +110,12 @@ uint8_t RTC_BCD2DEC(uint8_t e);
 uint8_t RTC_DEC2BCD(uint8_t e);
 void DEC_ASCII_3(uint16_t adc, uint8_t send_data_temp[20], uint8_t i);
 void DEC_ASCII_2(uint8_t num, uint8_t send_data_temp[20], uint8_t i);
-void I2C_WriteBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR, uint8_t sizebuf);
-void I2C_ReadBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR, uint8_t sizebuf);
+void I2C_WriteBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR,uint8_t pDat[], uint8_t sizebuf);
+void I2C_ReadBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR, uint8_t pData[], uint8_t sizebuf);
 void RTC_GetTime(void);
 void RTC_SetTime(uint8_t hour,uint8_t min,uint8_t sec,uint8_t day,uint8_t date,uint8_t month,uint8_t year);
+void QMC5883_GetData(void);
+void QMC5883_Config(void);
 
 void DEC_ASCII_3(uint16_t adc, uint8_t send_data_temp[20], uint8_t i)
 {
@@ -124,9 +139,9 @@ uint8_t RTC_DEC2BCD(uint8_t e)
 	return (e/10)<<4 | (e%10);
 }
 
-void I2C_WriteBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR, uint8_t sizebuf)
+void I2C_WriteBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR, uint8_t pData[], uint8_t sizebuf)
 {
-	while (HAL_I2C_Master_Transmit(&hi, (uint16_t) DEV_ADDR, (uint8_t*) &DS3231.I2C_Buffer, (uint16_t) sizebuf, (uint32_t)1000))
+	while (HAL_I2C_Master_Transmit(&hi, (uint16_t) DEV_ADDR, (uint8_t*)pData, (uint16_t) sizebuf, (uint32_t)1000))
 		{
 			if(HAL_I2C_GetError(&hi) != HAL_I2C_ERROR_AF)
 				{
@@ -135,9 +150,9 @@ void I2C_WriteBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR, uint8_t sizebuf)
 		}
 }
 
-void I2C_ReadBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR, uint8_t sizebuf)
+void I2C_ReadBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR, uint8_t pData[], uint8_t sizebuf)
 {
-	while(HAL_I2C_Master_Receive(&hi, (uint16_t) DEV_ADDR, (uint8_t*) &DS3231.I2C_Buffer, (uint16_t) sizebuf, (uint32_t)1000))
+	while(HAL_I2C_Master_Receive(&hi, (uint16_t) DEV_ADDR, (uint8_t*)pData, (uint16_t) sizebuf, (uint32_t)1000))
 		{
 			if(HAL_I2C_GetError(&hi) != HAL_I2C_ERROR_AF)
 				{
@@ -150,9 +165,9 @@ void RTC_GetTime(void)
 {
 	//Bat dau qua trinh nhan du lieu tu thanh ghi 0x00
 	DS3231.I2C_Buffer[0]=0x00;
-	I2C_WriteBuffer(hi2c1,(uint16_t) DS3231_ADD,1);
+	I2C_WriteBuffer(hi2c1,(uint16_t) DS3231_ADD,DS3231.I2C_Buffer,1);
 	while (HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY);
-	I2C_ReadBuffer(hi2c1,(uint16_t) DS3231_ADD,7);
+	I2C_ReadBuffer(hi2c1,(uint16_t) DS3231_ADD,DS3231.I2C_Buffer,7);
 	
 	DS3231.sec = RTC_BCD2DEC(DS3231.I2C_Buffer[0]);
 	DS3231.min = RTC_BCD2DEC(DS3231.I2C_Buffer[1]);
@@ -174,8 +189,34 @@ void RTC_SetTime(uint8_t hour,uint8_t min,uint8_t sec,uint8_t day,uint8_t date,u
 	DS3231.I2C_Buffer[6] = RTC_DEC2BCD(month);
 	DS3231.I2C_Buffer[7] = RTC_DEC2BCD(year);
 	
-	I2C_WriteBuffer(hi2c1,(uint16_t) DS3231_ADD,8);
-	HAL_Delay(100);
+	I2C_WriteBuffer(hi2c1,(uint16_t) DS3231_ADD,DS3231.I2C_Buffer,8);
+	HAL_Delay(200);
+}
+void QMC5883_GetData(void)
+{
+		//Bat dau qua trinh nhan du lieu tu thanh ghi 0x00
+	QMC5883.I2C_Buffer_Write[0]=0x00;
+	I2C_WriteBuffer(hi2c1,(uint16_t) QMC5883_ADDR,QMC5883.I2C_Buffer_Write,1);
+	while (HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY);
+
+	HAL_Delay(200);
+	I2C_ReadBuffer(hi2c1,(uint16_t) QMC5883_ADDR,QMC5883.I2C_Buffer_Read,6);
+	
+	QMC5883.x = (QMC5883.I2C_Buffer_Read[1]<<8)+QMC5883.I2C_Buffer_Read[0];
+	QMC5883.y = (QMC5883.I2C_Buffer_Read[3]<<8)+QMC5883.I2C_Buffer_Read[2];
+	QMC5883.z = (QMC5883.I2C_Buffer_Read[5]<<8)+QMC5883.I2C_Buffer_Read[4];
+
+}
+
+void QMC5883_Config(void)
+{
+	QMC5883.I2C_Buffer_Write[0] = 0x0B;
+	QMC5883.I2C_Buffer_Write[1] = 0x01;
+	I2C_WriteBuffer(hi2c1,(uint16_t) QMC5883_ADDR,QMC5883.I2C_Buffer_Write,2);
+	HAL_Delay(200);
+	QMC5883.I2C_Buffer_Write[0] = 0x09;
+	QMC5883.I2C_Buffer_Write[1] = 0x95;
+	I2C_WriteBuffer(hi2c1,(uint16_t) QMC5883_ADDR,QMC5883.I2C_Buffer_Write,2);
 }
 
 void delay_us(uint16_t period){
@@ -234,7 +275,7 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
 
-  /* USER CODE BEGIN 2 */
+
 	 HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1);
    HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2);
    HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_3);
@@ -243,13 +284,11 @@ int main(void)
 	 HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_2);
 	 HAL_TIM_Base_Start_IT(&htim2);
 	 HAL_UART_Receive_DMA(&huart2,receive_data,11);
+		QMC5883_Config();
 
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
   while (1)
   {
+		QMC5883_GetData();
 //		RTC_GetTime();		
 //		HAL_ADC_Start_IT(&hadc1);
 //		HAL_Delay(100);
