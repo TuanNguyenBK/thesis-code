@@ -289,18 +289,18 @@ int main(void)
   while (1)
   {
 		QMC5883_GetData();
-//		RTC_GetTime();		
-//		HAL_ADC_Start_IT(&hadc1);
-//		HAL_Delay(100);
-//		HAL_ADC_Stop_IT(&hadc1);
-//		Analyze_RecieveArray();
-//		Send_Data();
+		RTC_GetTime();		
+		HAL_ADC_Start_IT(&hadc1);
+		HAL_Delay(100);
+		HAL_ADC_Stop_IT(&hadc1);
+		Analyze_RecieveArray();
+		Send_Data();
 		
 		des_Speed=30;					//set up setpoint PID
 		Kp=0.05;Ki=0.5;Kd=0.0001;	
 		des_Position=750;		
 		Kp_Pos=0.3;Ki_Pos=0.08;Kd_Pos=0;
-		Zigziag_Mode();
+		//Zigziag_Mode();
 		if (start==1)
 			{				
 				if(au==1&&run==1)

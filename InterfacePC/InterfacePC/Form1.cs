@@ -18,17 +18,12 @@ namespace InterfacePC
         #region Quan ly bien
         List<Panel> listPanel = new List<Panel>();
         SerialPort UART = new SerialPort();
-        long tickStart = 0;
-        public enum _enCheDo { Compact = 0, Scroll };
-        _enCheDo CheDo = _enCheDo.Compact;
         string InputData = String.Empty;
-        delegate void SetTextCallback(string text);
         float Kp = 0, Ki = 0, Kd = 0;
-        int time = 0, w = 0, Tg = 0, dr = 0;
-        int dem, timeOut=0;
+        double time = 0;
+        int dem, timeOut=0,timeUp=0;
         string Time = "0",set_point="", Mode = "a",startHour="00",startMin="00";
-        string data;
-        string nhan = "0";
+        string data, nhan = "0";
         double set = 0, set1 = 0;
         string Tam = "",battery="000",timer="000",container="",minute="00",hour="00",day="00",month="00",second="00";
         double[] Data = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -73,6 +68,7 @@ namespace InterfacePC
             //initial state of panel
             P1.Hide(); P2.Hide(); P3.Hide(); P4.Hide(); P6.Hide(); P5.Show();P8.Hide();
             P5.BringToFront(); picturemenu.Hide(); //label1.Text = "tuannguyen"
+           // label1.Text = "";
         }
 
 
@@ -80,13 +76,7 @@ namespace InterfacePC
         {
             Control.CheckForIllegalCrossThreadCalls = false;
             _KhoiDong();
-            this.UART.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.UART_DataReceived);
-            //listPanel.Add(P1);
-            //listPanel.Add(P2);
-            //listPanel.Add(P3);
-            //listPanel.Add(P4);
-            //listPanel.Add(P5);
-            //listPanel[4].BringToFront();         
+            this.UART.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.UART_DataReceived);      
             reportPage();
         }
 
@@ -103,17 +93,14 @@ namespace InterfacePC
         }
         #endregion
 
-       
-        
-
         private void UART_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try
             {
                 //lbNhietDo.Text = UART.ReadTo("\r");
                 Tam = UART.ReadTo("\r");//nhan du lieu tu vdk gui len
-                //label1.Text = Tam.Substring(4,3);
-
+                //label1.Text = Tam.Substring(1,2);
+                //label1.Text = Tam;
                 //read value
                 battery = Tam.Substring(1, 3);//tach so 
                 container = Tam.Substring(4,3);
@@ -132,16 +119,15 @@ namespace InterfacePC
                 Data[4] = Convert.ToDouble(day);
                 Data[5] = Convert.ToDouble(month);
                 ////trans to int 
-                char_battery.Value = Convert.ToInt16(Data[0]);
-                //char_container.Value = Convert.ToInt16(Data[1]);
+                if (Data[0]<=100) char_battery.Value = Convert.ToInt16(Data[0]);
+                //if (Data[1] <= 100) char_container.Value = Convert.ToInt16(Data[1]);
                 //show time
                 txtHr.Text = hour;
                 txtMin.Text = minute;
                 txtSec.Text = second;
                 if (Tam.Substring(17, 1) == "s")
                 { btnDung_Click(sender,e); }
-                
-
+ 
                 BeginInvoke(new Action(() =>
                 {
                 }));
@@ -165,7 +151,7 @@ namespace InterfacePC
                     MessageBox.Show("This Com is unavailable now. PLease select another one.");
                     return;
                 }
-                btnConnect.Text = "Disconnect";
+                btnConnect.Text = "Disconnected";
             //enable START & STOP
                 btnChay.Enabled = true;
                 btnDung.Enabled = true;
@@ -176,8 +162,8 @@ namespace InterfacePC
                 //cbxTime.Enabled = true;
                 btnChay.Text = "SET UP";
             //other changes
-                btnDung.Enabled = false;
-                btnChay.Enabled = true;
+                //btnDung.Enabled = false;
+                //btnChay.Enabled = true;
                 stt.Text = "THE MACHINE is CONNECTED.";
                 stt.ForeColor = Color.Green;
                 btnConnect.BackColor = Color.Green;
@@ -278,7 +264,9 @@ namespace InterfacePC
                 if (txtHour.Text == "") txtHour.Text = "00";
                 if (txtMinute.Text == "") txtMinute.Text = "00";
                 if (txtHour.Text == "00" && txtMinute.Text == "00")
-                { startHour = hour; startMin = minute; timeOut = 0; }
+                { startHour = hour; startMin = minute; timeOut = 0;
+                    tempHour = Convert.ToDouble(hour); tempMinute = Convert.ToDouble(minute);
+                }
                 else
                 {
                     timeOut = 1;
@@ -305,18 +293,22 @@ namespace InterfacePC
             #endregion
 
             #region  select time up
-            if (cbxTime.Text == "None")
+            if (cbxTime.Text == "None" || cbxTime.Text == "")
             {
-                time = 0;
+                time = 0; cbxTime.Text = "None";timeUp = 0;
                 Time = string.Format("{0:00}", time);
             }
-            else Time = string.Format("{0:00}", cbxTime.Text);
-           
+            else
+            {
+                time = Convert.ToDouble(cbxTime.Text);
+                Time = string.Format("{0:00}", cbxTime.Text);
+                timeUp = 1;
+            }
             #endregion
 
             #region send data
             //send data
-            data = "S" + set_point + Time +startHour+startMin+Mode;
+            data = "S" + set_point + Time + startHour + startMin + Mode;
             UART.Write(data);
             timer1.Enabled = true;
             #endregion
@@ -462,17 +454,17 @@ namespace InterfacePC
 
         private void btnIntroduce_Click(object sender, EventArgs e)
         {
-            if (panel3.Height == 46) panel3.Height = 196;
+            if (panel3.Height == 41) panel3.Height = 196;
             else
-            { panel3.Height = 46; }
+            { panel3.Height = 41; }
 
         }
 
         private void btnManual_Click(object sender, EventArgs e)
         {
-            if (panel7.Height == 46) panel7.Height = 196;
+            if (panel7.Height == 44) panel7.Height = 196;
             else
-            { panel7.Height = 46; }
+            { panel7.Height = 44; }
         }
 
         #region setting time
@@ -502,6 +494,7 @@ namespace InterfacePC
             }
         }
 
+        //Select Start time
         private void btnTime_Click(object sender, EventArgs e)
         {
             if (P8.Visible == true) P8.Hide();
@@ -541,10 +534,10 @@ namespace InterfacePC
         //expand & collect menu
         private void button2_Click(object sender, EventArgs e)
         {
-            panel5.Width = 200;
+            panel5.Width = 169;
             picturemenu.Hide(); logo.Show();
-            P1.Location = new Point(200, 74); P2.Location = new Point(200, 74); P3.Location = new Point(200, 74);
-            P4.Location = new Point(200, 74); P5.Location = new Point(200, 74);P7.Location = new Point(200, 74);
+            P1.Location = new Point(169, 74); P2.Location = new Point(169, 74); P3.Location = new Point(169, 74);
+            P4.Location = new Point(169, 74); P5.Location = new Point(169, 74);P7.Location = new Point(169, 74);
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -660,22 +653,24 @@ namespace InterfacePC
         private void timer1_Tick(object sender, EventArgs e)
         {
             set1 = Data[0];
-            double temp = tempHour * 60 + tempMinute - Data[3] * 60 - Data[2];
-            if (timeOut == 1 && temp > 0)
+            double tempTimeOut = tempHour * 60 + tempMinute - Data[3] * 60 - Data[2];
+            double tempTimeUp= Data[3] * 60 + Data[2]- tempHour * 60 - tempMinute;
+            if (timeOut == 1 && tempTimeOut > 0)
             {
-                lblhour.Text = string.Format("{0:00}", Convert.ToInt16(temp / 60 - 0.5)) + " hrs";
-                lblminute.Text = string.Format("{0:00}", (temp % 60)) + " mins";
+                lblhour.Text = string.Format("{0:00}", Convert.ToInt16(tempTimeOut / 60 - 0.5)) + " hrs";
+                lblminute.Text = string.Format("{0:00}", (tempTimeOut % 60)) + " mins";
             }
             else
             {
                 lblhour.Text = "";
                 lblminute.Text = "";
             }
-
-            //char_battery.Value = Convert.ToInt16(Data[0]);
-            //char_container.Value = Convert.ToInt16(Data[1]);
-            //label1.Text = battery;
-
+            if (timeUp == 1 && tempTimeUp >= 0)
+            {
+                char_container.Value = Convert.ToInt16(tempTimeUp * 100 / time - 0.5);
+                label1.Text = string.Format("{0:00}", Convert.ToInt16(tempTimeUp * 100 / time - 0.5));
+            }
+            else char_container.Value = 0;
         }
     }
 }

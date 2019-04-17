@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 00-00 Start  00:00      Stop  00:00000m
 08-01 Start  00:37      Stop  00:38004a
 08-01 Start  00:39      Stop  00:40004a
@@ -44,19 +43,29 @@
 11-01 Start  23:48      Stop  23:48005m
 11-01 Start  23:48      Stop  23:49006a
 11-01 Start  23:50      Stop  23:51003a
-=======
-11-03 Start  20:49      Stop  20:50054m
-11-03 Start  20:50      Stop  20:50054a
-11-03 Start  20:50      Stop  20:51077a
-11-03 Start  20:52      Stop  20:53027a
+00-00 Start  00:00      Stop  00:00000m
 00-00 Start  00:00      Stop  00:00000m
 00-00 Start  00:00      Stop  00:00000a
 00-00 Start  00:00      Stop  00:00000a
 00-00 Start  00:00      Stop  00:00000a
 00-00 Start  00:00      Stop  00:00000a
+17-01 Start  00:08      Stop  00:08026a
+17-01 Start  00:08      Stop  00:08024m
+17-01 Start  00:08      Stop  00:09030a
+17-01 Start  00:08      Stop  00:09030a
+17-01 Start  00:08      Stop  00:09030a
+17-01 Start  00:53      Stop  00:54023a
+17-01 Start  00:58      Stop  00:59027a
+17-01 Start  00:59      Stop  01:00025m
+17-01 Start  01:01      Stop  01:01025a
+17-01 Start  01:02      Stop  01:04024a
+17-01 Start  01:06      Stop  01:06027a
+17-01 Start  01:07      Stop  01:08025a
+17-01 Start  01:10      Stop  01:10023a
+17-01 Start  01:11      Stop  01:12024a
+17-01 Start  01:13      Stop  01:14028a
+17-01 Start  01:15      Stop  01:17026a
+17-01 Start  01:18      Stop  01:19023a
+17-01 Start  01:53      Stop  01:55022a
+17-01 Start  01:59      Stop  01:59026a
 00-00 Start  00:00      Stop  00:00000a
-00-00 Start  00:00      Stop  00:00000a
-00-00 Start  00:00      Stop  00:00000a
-00-00 Start  02:30      Stop  00:00000a
-00-00 Start  02:30      Stop  00:00000a
->>>>>>> 81047704360078939bb7e6082e6e0b33bbfb1c34
