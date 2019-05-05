@@ -60,6 +60,7 @@
             this.P4 = new System.Windows.Forms.Panel();
             this.pictureBox23 = new System.Windows.Forms.PictureBox();
             this.panel10 = new System.Windows.Forms.Panel();
+            this.pictureBox20 = new System.Windows.Forms.PictureBox();
             this.txtSec = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.txtMin = new System.Windows.Forms.TextBox();
@@ -68,10 +69,9 @@
             this.label4 = new System.Windows.Forms.Label();
             this.lblminute = new Bunifu.Framework.UI.BunifuCustomLabel();
             this.lblhour = new Bunifu.Framework.UI.BunifuCustomLabel();
-            this.pictureBox21 = new System.Windows.Forms.PictureBox();
             this.panel8 = new System.Windows.Forms.Panel();
-            this.pictureBox20 = new System.Windows.Forms.PictureBox();
             this.char_container = new Bunifu.Framework.UI.BunifuCircleProgressbar();
+            this.pictureBox21 = new System.Windows.Forms.PictureBox();
             this.panel6 = new System.Windows.Forms.Panel();
             this.pictureBox19 = new System.Windows.Forms.PictureBox();
             this.char_battery = new Bunifu.Framework.UI.BunifuCircleProgressbar();
@@ -147,9 +147,9 @@
             this.P4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox23)).BeginInit();
             this.panel10.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox21)).BeginInit();
-            this.panel8.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox20)).BeginInit();
+            this.panel8.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox21)).BeginInit();
             this.panel6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox19)).BeginInit();
             this.P2.SuspendLayout();
@@ -366,6 +366,8 @@
             this.btnback.TabIndex = 4;
             this.btnback.UseVisualStyleBackColor = false;
             this.btnback.Click += new System.EventHandler(this.btnback_Click);
+            this.btnback.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnback_MouseDown);
+            this.btnback.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnback_MouseUp);
             // 
             // btnstop
             // 
@@ -391,6 +393,8 @@
             this.btnright.TabIndex = 1;
             this.btnright.UseVisualStyleBackColor = false;
             this.btnright.Click += new System.EventHandler(this.btnright_Click);
+            this.btnright.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnright_MouseDown);
+            this.btnright.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnright_MouseUp);
             // 
             // btnleft
             // 
@@ -403,6 +407,8 @@
             this.btnleft.TabIndex = 0;
             this.btnleft.UseVisualStyleBackColor = false;
             this.btnleft.Click += new System.EventHandler(this.btnleft_Click);
+            this.btnleft.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnleft_MouseDown);
+            this.btnleft.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnleft_MouseUp);
             // 
             // P3
             // 
@@ -516,6 +522,8 @@
             this.btnstraight.TabIndex = 3;
             this.btnstraight.UseVisualStyleBackColor = false;
             this.btnstraight.Click += new System.EventHandler(this.btnstraight_Click);
+            this.btnstraight.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnstraight_MouseDown);
+            this.btnstraight.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnstraight_MouseUp);
             // 
             // label1
             // 
@@ -564,6 +572,16 @@
             this.panel10.Name = "panel10";
             this.panel10.Size = new System.Drawing.Size(273, 148);
             this.panel10.TabIndex = 13;
+            // 
+            // pictureBox20
+            // 
+            this.pictureBox20.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox20.Image")));
+            this.pictureBox20.Location = new System.Drawing.Point(100, 2);
+            this.pictureBox20.Name = "pictureBox20";
+            this.pictureBox20.Size = new System.Drawing.Size(66, 36);
+            this.pictureBox20.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox20.TabIndex = 7;
+            this.pictureBox20.TabStop = false;
             // 
             // txtSec
             // 
@@ -659,16 +677,6 @@
             this.lblhour.TabIndex = 10;
             this.lblhour.Text = "0 hrs";
             // 
-            // pictureBox21
-            // 
-            this.pictureBox21.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox21.Image")));
-            this.pictureBox21.Location = new System.Drawing.Point(69, 15);
-            this.pictureBox21.Name = "pictureBox21";
-            this.pictureBox21.Size = new System.Drawing.Size(51, 32);
-            this.pictureBox21.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox21.TabIndex = 8;
-            this.pictureBox21.TabStop = false;
-            // 
             // panel8
             // 
             this.panel8.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(50)))), ((int)(((byte)(80)))));
@@ -679,16 +687,6 @@
             this.panel8.Name = "panel8";
             this.panel8.Size = new System.Drawing.Size(135, 148);
             this.panel8.TabIndex = 11;
-            // 
-            // pictureBox20
-            // 
-            this.pictureBox20.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox20.Image")));
-            this.pictureBox20.Location = new System.Drawing.Point(100, 2);
-            this.pictureBox20.Name = "pictureBox20";
-            this.pictureBox20.Size = new System.Drawing.Size(66, 36);
-            this.pictureBox20.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox20.TabIndex = 7;
-            this.pictureBox20.TabStop = false;
             // 
             // char_container
             // 
@@ -711,6 +709,16 @@
             this.char_container.Size = new System.Drawing.Size(85, 85);
             this.char_container.TabIndex = 6;
             this.char_container.Value = 0;
+            // 
+            // pictureBox21
+            // 
+            this.pictureBox21.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox21.Image")));
+            this.pictureBox21.Location = new System.Drawing.Point(69, 15);
+            this.pictureBox21.Name = "pictureBox21";
+            this.pictureBox21.Size = new System.Drawing.Size(51, 32);
+            this.pictureBox21.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox21.TabIndex = 8;
+            this.pictureBox21.TabStop = false;
             // 
             // panel6
             // 
@@ -1233,7 +1241,7 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(169, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(330, 74);
+            this.panel1.Size = new System.Drawing.Size(328, 74);
             this.panel1.TabIndex = 14;
             this.panel1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseClick);
             // 
@@ -1644,7 +1652,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(42)))), ((int)(((byte)(52)))));
-            this.ClientSize = new System.Drawing.Size(499, 507);
+            this.ClientSize = new System.Drawing.Size(497, 507);
             this.Controls.Add(this.P7);
             this.Controls.Add(this.P3);
             this.Controls.Add(this.P1);
@@ -1678,10 +1686,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox23)).EndInit();
             this.panel10.ResumeLayout(false);
             this.panel10.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox21)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox20)).EndInit();
             this.panel8.ResumeLayout(false);
             this.panel8.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox20)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox21)).EndInit();
             this.panel6.ResumeLayout(false);
             this.panel6.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox19)).EndInit();

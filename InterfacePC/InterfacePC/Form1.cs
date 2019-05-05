@@ -21,7 +21,7 @@ namespace InterfacePC
         string InputData = String.Empty;
         float Kp = 0, Ki = 0, Kd = 0;
         double time = 0;
-        int dem, timeOut=0,timeUp=0;
+        int stopTemp = 0, timeOut=0,timeUp=0;
         string Time = "0",set_point="", Mode = "a",startHour="00",startMin="00";
         string data, nhan = "0";
         double set = 0, set1 = 0;
@@ -125,8 +125,8 @@ namespace InterfacePC
                 txtHr.Text = hour;
                 txtMin.Text = minute;
                 txtSec.Text = second;
-                if (Tam.Substring(17, 1) == "s")
-                { btnDung_Click(sender,e); }
+                if (Tam.Substring(17, 1) == "s" && stopTemp == 1)
+                { stopTemp = 0; btnDung_Click(sender,e);  }
  
                 BeginInvoke(new Action(() =>
                 {
@@ -313,7 +313,7 @@ namespace InterfacePC
             timer1.Enabled = true;
             #endregion
             //change state of button
-            lblwarning.Text = "";
+            lblwarning.Text = ""; stopTemp = 1;
             btnChay.Text = "STARTED";
             btnDung.Enabled = true; btnDung.BackColor = Color.Teal;
             btnChay.Enabled = false; btnChay.BackColor = Color.Green;
@@ -328,38 +328,78 @@ namespace InterfacePC
         #region Controller
         private void btnstraight_Click(object sender, EventArgs e)
         {
-            UART.Write("h00000000");
-            btnstraight.BackColor = Color.Green;
-            btnstop.BackColor = Color.Red;
-            btnback.Enabled = false; btnleft.Enabled = false;
-            btnright.Enabled = false;
-            //btnstraight.Enabled = false;
+            //UART.Write("h00000000");
+            //btnstraight.BackColor = Color.Green;
+            //btnstop.BackColor = Color.Red;
+            //btnback.Enabled = false; btnleft.Enabled = false;
+            //btnright.Enabled = false;
+            ////btnstraight.Enabled = false;
+        }
+
+        private void btnstraight_MouseUp(object sender, MouseEventArgs e)
+        {
+            UART.Write("d00000000");
+            btnstraight.BackColor = Color.LightSeaGreen; btnleft.BackColor = Color.LightSeaGreen;
+            btnback.BackColor = Color.LightSeaGreen; btnright.BackColor = Color.LightSeaGreen;
+            btnstop.BackColor = Color.Gainsboro;
+            btnback.Enabled = true; btnleft.Enabled = true;
+            btnright.Enabled = true; btnstraight.Enabled = true;
         }
 
         private void btnleft_Click(object sender, EventArgs e)
         {
-            UART.Write("t00000000");
-            btnleft.BackColor = Color.Green; btnstop.BackColor = Color.Red;
-            btnback.Enabled = false; //btnleft.Enabled = false;
-            btnright.Enabled = false; btnstraight.Enabled = false;
+            //UART.Write("t00000000");
+            //btnleft.BackColor = Color.Green; btnstop.BackColor = Color.Red;
+            //btnback.Enabled = false; //btnleft.Enabled = false;
+            //btnright.Enabled = false; btnstraight.Enabled = false;
+        }
+
+        private void btnleft_MouseUp(object sender, MouseEventArgs e)
+        {
+            UART.Write("d00000000");
+            btnstraight.BackColor = Color.LightSeaGreen; btnleft.BackColor = Color.LightSeaGreen;
+            btnback.BackColor = Color.LightSeaGreen; btnright.BackColor = Color.LightSeaGreen;
+            btnstop.BackColor = Color.Gainsboro;
+            btnback.Enabled = true; btnleft.Enabled = true;
+            btnright.Enabled = true; btnstraight.Enabled = true;
         }
 
         private void btnback_Click(object sender, EventArgs e)
         {
-            UART.Write("l00000000");
-            btnback.BackColor = Color.Green; btnstop.BackColor = Color.Red;
-            //btnback.Enabled = false; btnright.Enabled = false;
-            btnleft.Enabled = false; btnstraight.Enabled = false;                      
+            //UART.Write("l00000000");
+            //btnback.BackColor = Color.Green; btnstop.BackColor = Color.Red;
+            ////btnback.Enabled = false; btnright.Enabled = false;
+            //btnleft.Enabled = false; btnstraight.Enabled = false;                      
+        }
+
+        private void btnback_MouseUp(object sender, MouseEventArgs e)
+        {
+            UART.Write("d00000000");
+            btnstraight.BackColor = Color.LightSeaGreen; btnleft.BackColor = Color.LightSeaGreen;
+            btnback.BackColor = Color.LightSeaGreen; btnright.BackColor = Color.LightSeaGreen;
+            btnstop.BackColor = Color.Gainsboro;
+            btnback.Enabled = true; btnleft.Enabled = true;
+            btnright.Enabled = true; btnstraight.Enabled = true;
         }
 
         private void btnright_Click(object sender, EventArgs e)
         {
-            UART.Write("p00000000");
-            btnright.BackColor = Color.Green; btnstop.BackColor = Color.Red;
-            btnleft.Enabled = false; btnstraight.Enabled = false;
-            //btnright.Enabled = false;
-            btnback.Enabled = false;
+            //UART.Write("p00000000");
+            //btnright.BackColor = Color.Green; btnstop.BackColor = Color.Red;
+            //btnleft.Enabled = false; btnstraight.Enabled = false;
+            ////btnright.Enabled = false;
+            //btnback.Enabled = false;
         }
+        private void btnright_MouseUp(object sender, MouseEventArgs e)
+        {
+            UART.Write("d00000000");
+            btnstraight.BackColor = Color.LightSeaGreen; btnleft.BackColor = Color.LightSeaGreen;
+            btnback.BackColor = Color.LightSeaGreen; btnright.BackColor = Color.LightSeaGreen;
+            btnstop.BackColor = Color.Gainsboro;
+            btnback.Enabled = true; btnleft.Enabled = true;
+            btnright.Enabled = true; btnstraight.Enabled = true;
+        }
+
 
         private void btnstop_Click(object sender, EventArgs e)
         {
@@ -369,6 +409,40 @@ namespace InterfacePC
             btnstop.BackColor = Color.Gainsboro;
             btnback.Enabled = true; btnleft.Enabled = true;
             btnright.Enabled = true; btnstraight.Enabled = true;
+        }
+
+
+        private void btnstraight_MouseDown(object sender, MouseEventArgs e)
+        {
+            UART.Write("h00000000");
+            btnstraight.BackColor = Color.Green;
+            //btnstop.BackColor = Color.Red;
+            btnback.Enabled = false; btnleft.Enabled = false;
+            btnright.Enabled = false;
+        }
+
+        private void btnright_MouseDown(object sender, MouseEventArgs e)
+        {
+            UART.Write("p00000000");
+            btnright.BackColor = Color.Green;
+            btnleft.Enabled = false; btnstraight.Enabled = false;
+            btnback.Enabled = false;
+        }
+
+        private void btnback_MouseDown(object sender, MouseEventArgs e)
+        {
+            UART.Write("l00000000");
+            btnback.BackColor = Color.Green;
+            btnright.Enabled = false;
+            btnleft.Enabled = false; btnstraight.Enabled = false;
+        }
+
+        private void btnleft_MouseDown(object sender, MouseEventArgs e)
+        {
+            UART.Write("t00000000");
+            btnleft.BackColor = Color.Green;
+            btnback.Enabled = false; //btnleft.Enabled = false;
+            btnright.Enabled = false; btnstraight.Enabled = false;
         }
         #endregion
 
@@ -424,7 +498,7 @@ namespace InterfacePC
             btnStatus.BackColor = Color.FromArgb(41, 39, 70); btnStatus.ForeColor = Color.Aquamarine;
             btnHome.BackColor = Color.FromArgb(41, 39, 40); btnHome.ForeColor = Color.DimGray;
             btnHistory.BackColor = Color.FromArgb(41, 39, 40); btnHistory.ForeColor = Color.DimGray;
-        }     
+        }
 
         private void btnHistory_Click(object sender, EventArgs e)
         {
