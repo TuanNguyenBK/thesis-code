@@ -17,7 +17,7 @@ DMA_HandleTypeDef hdma_usart2_rx;
 /* Private variables ---------------------------------------------------------*/
 uint8_t send_data[20], send_data_temp[20],i=0,receive_data[11],echo_receive_data[1],count=0;
 char* data="92345\r";
-uint16_t duty0=0,duty1=0,duty2=0,duty3=0,duty4=0,tmp_duty4=0,duty5=0,tmp_duty5=0,C=0,D=0,Output=0,Output1=0;
+uint16_t duty0=0,duty1=0,duty2=0,duty3=0,duty4=0,tmp_duty4=0,duty5=0,tmp_duty5=300,C=0,D=0,Output=0,Output1=0;
 uint16_t Output2=0,Output3=0;
 uint16_t start_hour=0,start_minute=0,time_out=0;
 uint32_t pre_Pulse=0,Pulse=0,pulse=0,p=0,TocDoDat=0,Sampling_time=20,inv_Sampling_time=50;
@@ -33,7 +33,7 @@ signed long rSpeed1=0,Err1=0,pre_Err1=0,pre_pre_Err1=0;
 signed long Err2=0,pre_Err2=0,pre_pre_Err2=0,pros2=0,loop=0;
 signed long Err3=0,pre_Err3=0,pre_pre_Err3=0,pros3=0,loop1=0;
 
-int start=0,run=0,sample_count=0,au=0,motor_left=0,motor_right=0,motor_straight=0,motor_back=0;
+int start=0,start_button=0,run=0,sample_count=0,au=0,motor_left=0,motor_right=0,motor_straight=0,motor_back=0;
 int	Deg_90_left=0,Deg_90_right=0,left=0,right=0,a=0,stop1=1,stop2=0,report=0,b=0,cont=0;
 int stuck=0, zigzac_flat=0,start_zigzac=0, loop_once=0,loop_once_1=0;
 uint16_t stop_hour=0,stop_minute=0;
@@ -109,6 +109,8 @@ void Zigziag_Mode(void);
 int StuckMachine(void);
 void Get_Battery(void);
 void Find_Wall(void);
+void Check_Start_Button(void);
+void Settings_agr(void);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 uint8_t RTC_BCD2DEC(uint8_t e);
@@ -289,32 +291,29 @@ int main(void)
 	 HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_2);
 	 HAL_TIM_Base_Start_IT(&htim2);
 	 HAL_UART_Receive_DMA(&huart2,receive_data,11);
-		//QMC5883_Config();
 
   while (1)
   {
-		//QMC5883_GetData();
 		RTC_GetTime();	
 		Get_Battery();
 		Analyze_RecieveArray();
+		Check_Start_Button();	
 		Send_Data();
+		Settings_agr();
 		
-		des_Speed=30;					//set up setpoint PID
-		Kp=0.9;Ki=0.6;Kd=0.0002;	
-		Kp2=0.05;Ki2=0.5;Kd2=0.0001;	
-		des_Position=730;		
-		Kp_Pos=0.3;Ki_Pos=0.08;Kd_Pos=0;
-		//Zigziag_Mode();
+//		Zigziag_Mode();
 //		if(zigzac_flat==0)Find_Wall();
 //		else Zigziag_Mode();
 		if (start==1)
-			{				
-				if(au==1&&run==1)
+			{		
+				//* Auto *//
+				if(au==1&&run==1&&start_button==1)
 				{			
+					duty5=tmp_duty5;duty4=90;
 					if(zigzac_flat==0)Find_Wall();
 					else Zigziag_Mode();
 				}
-				
+				//* Manual *//
 				if(au==0)
 				{		duty5= tmp_duty5;duty4= tmp_duty4;
 						if(receive_data[0]=='t')Go_Left();		//trai
@@ -324,8 +323,6 @@ int main(void)
 						if(receive_data[0]=='l')Go_Back();		//di lui
 				}
 			}
-
-
   }
 }
 
@@ -345,36 +342,42 @@ void Get_Battery(void){
 }
 
 void Analyze_RecieveArray(void)
-{
+{	
+		//*Settings for Robot*//
 		if(receive_data[0]=='S')
 				{
-						start=1;report=0;tmp_duty4=90;
+						receive_data[0]=0;start=1;report=0;tmp_duty4=90;start_button=1;
+					//*Setting power of vaccum*//
 						if(receive_data[1]=='L')tmp_duty5=250;					
 						if(receive_data[1]=='M')tmp_duty5=325;					
-						if(receive_data[1]=='H')tmp_duty5=400;					
+						if(receive_data[1]=='H')tmp_duty5=400;	
+					//*Setting mode of vaccum*//
 						if(receive_data[8]=='a')au=1;
 						if(receive_data[8]=='m')au=0;
+					//*Setting time of vaccum in mode Auto*//
 						  time_out=(receive_data[2]-48)*10+(receive_data[3]-48);
 							start_hour=(receive_data[4]-48)*10+(receive_data[5]-48);
 							start_minute=(receive_data[6]-48)*10+(receive_data[7]-48);
 							stop_hour=(start_hour*60+start_minute+time_out)/60;
 							stop_minute=(start_hour*60+start_minute+time_out)%60;
-				}		
-		if(receive_data[0]=='D')
+				}	
+		//*Stop Robot*//
+		if(receive_data[0]=='D'||start_button==0)
 				{
-					start=0;stop1=1;stop2=0;
+					receive_data[0]=0;
+					start=0;start_button=0;stop1=1;stop2=0;
 					report=1;Deg_90_left=0;Deg_90_right=0;
-					Stop();run=0;a=0;left=0;right=0;
-					duty5=0;tmp_duty5=0;
-					duty4=0;tmp_duty4=0;						
+					Stop();run=0;a=0;left=0;right=0;au=0;time_out=0;
+					duty5=0;tmp_duty5=300;
+					duty4=0;tmp_duty4=90;						
 				}
 		send_data[16]='0';
 		if(au==1)
 		{
 					if((DS3231.hour==start_hour&&DS3231.min==start_minute)||(start_hour==0&&start_minute==0))
 					{run=1;duty5=tmp_duty5;duty4=tmp_duty4;}
-					else if(DS3231.hour>=stop_hour&&DS3231.min>=stop_minute&&time_out!=0&&run==1)
-					{run=0;Stop();duty5=0;duty4=0;send_data[16]='s';}							
+					else if((DS3231.hour>=stop_hour&&DS3231.min>=stop_minute&&time_out!=0&&run==1))
+					{run=0;Stop();duty5=0;duty4=0;send_data[16]='s';start_button=0;}							
 		}
 }
 
@@ -392,29 +395,51 @@ void Send_Data(void)
 		DEC_ASCII_2(DS3231.month,send_data,14);		//month
 		send_data[17]= '\r';
 		HAL_UART_Transmit_IT(&huart2,(uint8_t  *)send_data,18);
-	
 }
 
+void Check_Start_Button(void)
+{
+	if(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)==1)
+			{
+					HAL_Delay(50);
+					if(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)==1){
+						if(start_button==0)
+									{start=1;au=1;run=1;start_button=1;duty5=tmp_duty5;duty4=tmp_duty4;}
+						else  {start=0;au=0;run=0;start_button=0;duty5=0;duty4=0;send_data[16]='s';zigzac_flat=0;}
+					}
+			}
+}
+
+void Settings_agr (void)
+{
+		//*set up setpoint speed PID*//
+		des_Speed=30;						
+		Kp=0.9;Ki=0.6;Kd=0.0002;	       //Slave
+		Kp2=0.05;Ki2=0.5;Kd2=0.0001;	 	//Master
+		//*set up setpoint position PID*//
+		des_Position=700;		
+		Kp_Pos=0.3;Ki_Pos=0.08;Kd_Pos=0;
+}
 void Find_Wall(void)
 {
 	Sonic();
 	if( HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1) == 0 && HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_9) == 0){
 		loop_tmp=0;
-		if(Distance< 1.5){zigzac_flat=1;Stop();HAL_Delay(1000);start_zigzac=1;}
+		if(Distance< 3){zigzac_flat=1;Stop();HAL_Delay(1000);start_zigzac=1;}
 		else {
 				if(loop_once_1==0){
-						Stop();HAL_Delay(500);loop_once_1=1;}
+						Stop();HAL_Delay(50);loop_once_1=1;}
 					Go_Straight();loop_once=0;
 		}
 	}
 	else if( HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1) == 0){
 		loop_tmp++;loop_once_1=0;
-		if(loop_tmp>5){Stop();HAL_Delay(100);Go_Right();HAL_Delay(500);loop_tmp=0;}}
+		if(loop_tmp>5){loop_tmp=0;Stop();HAL_Delay(50);Go_Right();HAL_Delay(500);Stop();}}
 	else if ( HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_9) == 0) {
 		loop_tmp++;loop_once_1=0;
-		if(loop_tmp>5){Stop();HAL_Delay(100);Go_Left();HAL_Delay(500);loop_tmp=0;}}
-	else if (Distance< 1.5|| StuckMachine()==1) {
-			loop_tmp=0;loop_once_1=0;Stop();HAL_Delay(100);Go_Left();HAL_Delay(1500);}
+		if(loop_tmp>5){loop_tmp=0;Stop();HAL_Delay(50);Go_Left();HAL_Delay(500);Stop();}}
+	else if (Distance< 2|| StuckMachine()==1||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 1) {
+			loop_tmp=0;loop_once_1=0;Stop();HAL_Delay(50);Go_Left();HAL_Delay(1000);Stop();}
 	else {
 		loop_tmp=0;
 		if(loop_once_1==0){
@@ -428,21 +453,16 @@ void Find_Wall(void)
 void Zigziag_Mode(void)
 {						Sonic();//||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1) == 0||HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_9) == 0
 						//if(HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 0 || StuckMachine()==1 )
-						if(Distance< 4 || StuckMachine()==1 || start_zigzac==1)
+						if(Distance< 4 || StuckMachine()==1 || start_zigzac==1||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 1)
 									{start_zigzac=0;
 										if(stop1==1)
-											 {Stop();HAL_Delay(200);
-												stop1=0;
-												 	if(a==0)		//* co quay trai, phai cua xe
-														{left=1;right=0;
-														}
-													else	
-														{left=0,right=1;
-														}	
-												}
+											 {Stop();HAL_Delay(100);
+												if(C==0&&D==0){Stop();stop1=0;}
+												if(a==0){left=1;right=0;}								//* co quay trai, phai cua xe
+												else{left=0;right=1;}														
+											 }
 										else if (Deg_90_left!=1&&Deg_90_right!=1)
-										{Go_Back();stop2=1;	}	
-																																	
+										{Go_Back();stop2=1;	}																																		
 									}
 						 else 
 									{
@@ -453,17 +473,17 @@ void Zigziag_Mode(void)
 										if(a==0)  //* xe quay trái
 										{
 											if(cont==1)
-												{stop1=1;Go_Straight();if(count_time_delay>250){Stop();HAL_Delay(500);cont++;left=1;count_time_delay=0;}}	//* xe di thang sau khi quay trai lan 1
+												{stop1=1;Go_Straight();if(count_time_delay>400){Stop();HAL_Delay(500);cont++;left=1;count_time_delay=0;}}	//* xe di thang sau khi quay trai lan 1
 											else if(left==1&&cont<3)Deg_90_left=1;		//*xe quay trái 90 lan 1 & 3
 											else if (cont>=3)
-											{cont=0;a=1-a;stop1=1;}					//*  sau khi quay xong 2 lan, bat co` trai phai
+											{cont=0;a=1-a;stop1=1;}										//*  sau khi quay xong 2 lan, bat co` trai phai
 											else if (Deg_90_left==0)Go_Straight();		//* cho xe di thang sau khi hoan thanh sau 2 lan quay
 											
 										}
 										else 		//* xe quay phai
 										{
 											if(cont==1)
-												{stop1=1;Go_Straight();if(count_time_delay>250){Stop();HAL_Delay(500);cont++;right=1;count_time_delay=0;}}
+												{stop1=1;Go_Straight();if(count_time_delay>400){Stop();HAL_Delay(500);cont++;right=1;count_time_delay=0;}}
 											else if(right==1&&cont<3)Deg_90_right=1;
 											else if (cont>=3)
 											{cont=0;a=1-a;stop1=1;}
@@ -473,26 +493,21 @@ void Zigziag_Mode(void)
 }
 	
 
-
 void Go_Straight (void)
 {
-	//motor_straight=1;motor_back=0;motor_left=0;motor_right=0;
 	motor_straight=1;
 }
 void Go_Back (void)
 {
-		//motor_straight=0;motor_back=1;motor_left=0;motor_right=0;
 	motor_back=1;
 }
 void Go_Left (void)
 {
-		//motor_straight=0;motor_back=0;motor_left=1;motor_right=0;
-	duty3=126;motor_left=1;
+	duty3=140;motor_left=1;
 }
 void Go_Right (void)
 { 
-			//motor_straight=0;motor_back=0;motor_left=0;motor_right=1;
-	duty1=126;motor_right=1;
+	duty1=150;motor_right=1;
 }
 void Stop(void)
 {
@@ -555,7 +570,7 @@ else if(Err2>-3&&loop==1)
 {pros2=0;Deg_90_left=0;cont++;
 duty2=0;left=0;loop=0;}
 Output2 = Output2+Kp_Pos*Err2+Ki_Pos*Sampling_time*(Err2+pre_Err2)/(2000)+Kd_Pos*(Err2-2*pre_Err2+pre_pre_Err2)*inv_Sampling_time;
-if (Output2 >140) Output2=140;
+if (Output2 >160) Output2=160;
 if (Output2 <=0) Output2=0;
 if(Deg_90_left==1&&pros2==0)
 {duty3=Output2;duty2=0;}
@@ -580,7 +595,7 @@ else if(Err3>-3&&loop1==1)
 {pros3=0;Deg_90_right=0;cont++;
 duty0=0;right=0;loop1=0;}
 Output3 = Output3+Kp_Pos*Err2+Ki_Pos*Sampling_time*(Err2+pre_Err2)/(2000)+Kd_Pos*(Err2-2*pre_Err2+pre_pre_Err2)*inv_Sampling_time;
-if (Output3 >140) Output3=140;
+if (Output3 >165) Output3=165;
 if (Output3 <=0) Output3=0;
 if(Deg_90_right==1&&pros3==0)
 {duty1=Output3;duty0=0;}
@@ -628,12 +643,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			if(motor_back==1||motor_straight==1||motor_left==1||motor_right==1){pulse1++;p1++;}
 			if(Deg_90_left==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12) == 0)Pulse1++;
 			if(Deg_90_left==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12) == 1)Pulse1--;
-		}
-		
-				if(GPIO_Pin==GPIO_PIN_0)
-		{
-			Deg_90_right=1;
-		}		
+		}	
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
