@@ -21,10 +21,11 @@ uint16_t duty0=0,duty1=0,duty2=0,duty3=0,duty4=0,tmp_duty4=0,duty5=0,tmp_duty5=3
 uint16_t Output2=0,Output3=0;
 uint16_t start_hour=0,start_minute=0,time_out=0;
 uint32_t pre_Pulse=0,Pulse=0,pulse=0,p=0,TocDoDat=0,Sampling_time=20,inv_Sampling_time=50;
-uint32_t pre_Pulse1=0,Pulse1=0,pulse1=0,p1=0,TocDoDat1=0,time_copy=0,time=0;
+uint32_t pre_Pulse1=0,Pulse1=0,pulse1=0,p1=0,TocDoDat1=0;
+uint32_t time_copy=0,time=0,time_right=0,time_left=0,time_right_copy=0,time_left_copy=0,count_right_wall=0,count_left_wall=0;
 uint16_t count_time_delay=0,count_time_ADC=0;
 
-float Distance,Show = 0,Kp,Ki,Kd,Kp2,Ki2,Kd2;
+float Distance,Distance_right,Distance_left,Kp,Ki,Kd,Kp2,Ki2,Kd2;
 float Kp_Pos,Ki_Pos,Kd_Pos;
 signed long des_Speed=400,des_Position=700;
 signed long	rSpeed=0,Err=0,pre_Err=0,pre_pre_Err=0;
@@ -35,7 +36,7 @@ signed long Err3=0,pre_Err3=0,pre_pre_Err3=0,pros3=0,loop1=0;
 
 int start=0,start_button=0,run=0,sample_count=0,au=0,motor_left=0,motor_right=0,motor_straight=0,motor_back=0;
 int	Deg_90_left=0,Deg_90_right=0,left=0,right=0,a=0,stop1=1,stop2=0,report=0,b=0,cont=0;
-int stuck=0, zigzac_flat=0,start_zigzac=0, loop_once=0,loop_once_1=0;
+int stuck=0, zigzac_flat=0,start_zigzac=1, loop_once=0,loop_once_1=0;
 uint16_t stop_hour=0,stop_minute=0;
 uint16_t adc_value,adc,loop_tmp=0;
 
@@ -98,6 +99,8 @@ void Motor_Left_Position_PID(void);
 void Motor_Right_Position_PID(void);
 void Duty_Config(void);
 void Sonic(void);
+void Sonic_Right(void);
+void Sonic_Left(void);
 void Go_Straight (void);
 void Go_Back (void);
 void Go_Left (void);
@@ -301,9 +304,6 @@ int main(void)
 		Send_Data();
 		Settings_agr();
 		
-//		Zigziag_Mode();
-//		if(zigzac_flat==0)Find_Wall();
-//		else Zigziag_Mode();
 		if (start==1)
 			{		
 				//* Auto *//
@@ -312,6 +312,7 @@ int main(void)
 					duty5=tmp_duty5;duty4=90;
 					if(zigzac_flat==0)Find_Wall();
 					else Zigziag_Mode();
+					//Zigziag_Mode();
 				}
 				//* Manual *//
 				if(au==0)
@@ -339,6 +340,7 @@ void Get_Battery(void){
 			HAL_ADC_Start_IT(&hadc1);
 			HAL_Delay(50);
 			HAL_ADC_Stop_IT(&hadc1);
+			if(adc_value<3100){start=0;start_button=0;run=0;Stop();}
 }
 
 void Analyze_RecieveArray(void)
@@ -385,7 +387,7 @@ void Analyze_RecieveArray(void)
 void Send_Data(void)
 {
 		//send value
-		DEC_ASCII_3(adc_value*100/4096,send_data,0); //ADC value (battery)
+		DEC_ASCII_3(adc_value*25/256-300,send_data,0); //ADC value (battery)
 		DEC_ASCII_3(100-adc_value*100/4096,send_data,3); //COMPLETE VALUE
 		//send time
 		DEC_ASCII_2(DS3231.sec,send_data,6);		//second
@@ -423,43 +425,70 @@ void Settings_agr (void)
 void Find_Wall(void)
 {
 	Sonic();
-	if( HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1) == 0 && HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_9) == 0){
+//	if( HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1) == 0 && HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_9) == 0){
+//		loop_tmp=0;
+//		if(Distance< 3){zigzac_flat=1;Stop();HAL_Delay(1000);start_zigzac=1;}
+//		else {
+//				if(loop_once_1==0){
+//						Stop();HAL_Delay(50);loop_once_1=1;}
+//					Go_Straight();loop_once=0;
+//		}
+//	}
+//	else if( HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1) == 0){
+//		loop_tmp++;loop_once_1=0;
+//		if(loop_tmp>5){loop_tmp=0;Stop();HAL_Delay(50);Go_Right();HAL_Delay(500);Stop();}}
+//	else if ( HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_9) == 0) {
+//		loop_tmp++;loop_once_1=0;
+//		if(loop_tmp>5){loop_tmp=0;Stop();HAL_Delay(50);Go_Left();HAL_Delay(500);Stop();}}
+//	else if (Distance< 2|| StuckMachine()==1||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 1) {
+//			loop_tmp=0;loop_once_1=0;Stop();HAL_Delay(50);Go_Left();HAL_Delay(1000);Stop();}
+//	else {
+//		loop_tmp=0;
+//		if(loop_once_1==0){
+//				Stop();HAL_Delay(200);
+//				if(C==0&&D==0){Stop();loop_once_1=1;}
+//		}
+//		if(loop_once_1==1){Go_Straight();loop_once=0;}
+//	}
+	if(Distance< 3)
+	{
 		loop_tmp=0;
-		if(Distance< 3){zigzac_flat=1;Stop();HAL_Delay(1000);start_zigzac=1;}
+		if( HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1) == 0 && HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_9) == 0)
+		{zigzac_flat=1;Stop();HAL_Delay(1000);start_zigzac=1;}
+		else if( HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1) == 0){
+				loop_tmp++;loop_once_1=0;
+				if(loop_tmp>5){loop_tmp=0;Stop();HAL_Delay(50);Go_Right();HAL_Delay(500);Stop();}}
+		else if ( HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_9) == 0) {
+				loop_tmp++;loop_once_1=0;
+				if(loop_tmp>5){loop_tmp=0;Stop();HAL_Delay(50);Go_Left();HAL_Delay(500);Stop();}}
 		else {
-				if(loop_once_1==0){
-						Stop();HAL_Delay(50);loop_once_1=1;}
-					Go_Straight();loop_once=0;
+			loop_tmp=0;loop_once_1=0;Stop();HAL_Delay(50);Go_Left();HAL_Delay(1000);Stop();
 		}
 	}
-	else if( HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1) == 0){
-		loop_tmp++;loop_once_1=0;
-		if(loop_tmp>5){loop_tmp=0;Stop();HAL_Delay(50);Go_Right();HAL_Delay(500);Stop();}}
-	else if ( HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_9) == 0) {
-		loop_tmp++;loop_once_1=0;
-		if(loop_tmp>5){loop_tmp=0;Stop();HAL_Delay(50);Go_Left();HAL_Delay(500);Stop();}}
-	else if (Distance< 2|| StuckMachine()==1||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 1) {
+
+	else if (StuckMachine()==1||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 1) {
 			loop_tmp=0;loop_once_1=0;Stop();HAL_Delay(50);Go_Left();HAL_Delay(1000);Stop();}
 	else {
-		loop_tmp=0;
-		if(loop_once_1==0){
-				Stop();HAL_Delay(200);
-				if(C==0&&D==0){Stop();loop_once_1=1;}
-		}
-		if(loop_once_1==1){Go_Straight();loop_once=0;}
+			loop_tmp=0;
+			if(loop_once_1==0){
+					Stop();HAL_Delay(200);
+					Stop();loop_once_1=1;
+			}
+			if(loop_once_1==1){Go_Straight();loop_once=0;}
 	}
 }
 
 void Zigziag_Mode(void)
 {						Sonic();//||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1) == 0||HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_9) == 0
-						//if(HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 0 || StuckMachine()==1 )
 						if(Distance< 4 || StuckMachine()==1 || start_zigzac==1||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 1)
 									{start_zigzac=0;
 										if(stop1==1)
 											 {Stop();HAL_Delay(100);
 												if(C==0&&D==0){Stop();stop1=0;}
-												if(a==0){left=1;right=0;}								//* co quay trai, phai cua xe
-												else{left=0;right=1;}														
+												if(count_right_wall>15&&count_left_wall>15){
+													a=1-a;count_right_wall=0;count_left_wall=0;}
+												if(a==0){left=1;right=0;count_right_wall=0;}								//* co quay trai, phai cua xe
+												else{left=0;right=1;count_left_wall=0;}														
 											 }
 										else if (Deg_90_left!=1&&Deg_90_right!=1)
 										{Go_Back();stop2=1;	}																																		
@@ -477,8 +506,11 @@ void Zigziag_Mode(void)
 											else if(left==1&&cont<3)Deg_90_left=1;		//*xe quay trái 90 lan 1 & 3
 											else if (cont>=3)
 											{cont=0;a=1-a;stop1=1;}										//*  sau khi quay xong 2 lan, bat co` trai phai
-											else if (Deg_90_left==0)Go_Straight();		//* cho xe di thang sau khi hoan thanh sau 2 lan quay
-											
+											else if (Deg_90_left==0){
+												Go_Straight();													//* cho xe di thang sau khi hoan thanh sau 2 lan quay
+												Sonic_Left();
+												if(Distance_left<9)count_left_wall++;
+											}
 										}
 										else 		//* xe quay phai
 										{
@@ -487,7 +519,11 @@ void Zigziag_Mode(void)
 											else if(right==1&&cont<3)Deg_90_right=1;
 											else if (cont>=3)
 											{cont=0;a=1-a;stop1=1;}
-											else if (Deg_90_right==0)Go_Straight();
+											else if (Deg_90_right==0){
+												Go_Straight();
+												Sonic_Right();
+												if(Distance_right<9)count_right_wall++;
+											}
 										}	
 									}	
 }
@@ -503,11 +539,11 @@ void Go_Back (void)
 }
 void Go_Left (void)
 {
-	duty3=140;motor_left=1;
+	duty3=160;motor_left=1;
 }
 void Go_Right (void)
 { 
-	duty1=150;motor_right=1;
+	duty1=170;motor_right=1;
 }
 void Stop(void)
 {
@@ -570,7 +606,7 @@ else if(Err2>-3&&loop==1)
 {pros2=0;Deg_90_left=0;cont++;
 duty2=0;left=0;loop=0;}
 Output2 = Output2+Kp_Pos*Err2+Ki_Pos*Sampling_time*(Err2+pre_Err2)/(2000)+Kd_Pos*(Err2-2*pre_Err2+pre_pre_Err2)*inv_Sampling_time;
-if (Output2 >160) Output2=160;
+if (Output2 >180) Output2=180;
 if (Output2 <=0) Output2=0;
 if(Deg_90_left==1&&pros2==0)
 {duty3=Output2;duty2=0;}
@@ -584,7 +620,7 @@ pre_Err2=Err2;
 
 void Motor_Right_Position_PID(void)
 {
-Err3=des_Position-Pulse;
+Err3=680-Pulse;
 if(Err3<0)
 {
 Err3=-Err3;
@@ -595,7 +631,7 @@ else if(Err3>-3&&loop1==1)
 {pros3=0;Deg_90_right=0;cont++;
 duty0=0;right=0;loop1=0;}
 Output3 = Output3+Kp_Pos*Err2+Ki_Pos*Sampling_time*(Err2+pre_Err2)/(2000)+Kd_Pos*(Err2-2*pre_Err2+pre_pre_Err2)*inv_Sampling_time;
-if (Output3 >165) Output3=165;
+if (Output3 >185) Output3=185;
 if (Output3 <=0) Output3=0;
 if(Deg_90_right==1&&pros3==0)
 {duty1=Output3;duty0=0;}
@@ -688,8 +724,49 @@ void Sonic(void)
 			  HAL_Delay(50);
 }
 
+void Sonic_Right(void)
+{
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+     delay_us(2); //2 micro seconds
+       
+      //then we create a pulse for 10us
+         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+         delay_us(10); 
+         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);        
+         time_right=0;
 
+      while (HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_6) == 0);
+      while (HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_6))
+      {
+         time_right++;
+         delay_us(2); // delay 2 us
+         time_right_copy=time_right;
+         Distance_right=(float)(time_right_copy*0.0346);
+      }
+			  HAL_Delay(50);
+}
 
+void Sonic_Left(void)
+{
+		 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_RESET);
+     delay_us(2); //2 micro seconds
+       
+      //then we create a pulse for 10us
+         HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_SET);
+         delay_us(10); 
+         HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_RESET);        
+         time_left=0;
+
+      while (HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_9) == 0);
+      while (HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_9))
+      {
+         time_left++;
+         delay_us(2); // delay 2 us
+         time_left_copy=time_left;
+         Distance_left=(float)(time_left_copy*0.0346);
+      }
+			  HAL_Delay(50);
+}
 void SystemClock_Config(void)
 {
 
@@ -943,11 +1020,18 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PA7 PA10 PA15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_10|GPIO_PIN_15;
+  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_10;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+	
+	/*Configure GPIO pin : PD10 */
+	GPIO_InitStruct.Pin = GPIO_PIN_10;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PB0 PB1 */
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
@@ -967,7 +1051,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7|GPIO_PIN_10|GPIO_PIN_15, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7|GPIO_PIN_10, GPIO_PIN_RESET);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
