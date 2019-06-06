@@ -326,15 +326,6 @@ namespace InterfacePC
         #endregion
 
         #region Controller
-        private void btnstraight_Click(object sender, EventArgs e)
-        {
-            //UART.Write("h00000000");
-            //btnstraight.BackColor = Color.Green;
-            //btnstop.BackColor = Color.Red;
-            //btnback.Enabled = false; btnleft.Enabled = false;
-            //btnright.Enabled = false;
-            ////btnstraight.Enabled = false;
-        }
 
         private void btnstraight_MouseUp(object sender, MouseEventArgs e)
         {
@@ -344,14 +335,6 @@ namespace InterfacePC
             btnstop.BackColor = Color.Gainsboro;
             btnback.Enabled = true; btnleft.Enabled = true;
             btnright.Enabled = true; btnstraight.Enabled = true;
-        }
-
-        private void btnleft_Click(object sender, EventArgs e)
-        {
-            //UART.Write("t00000000");
-            //btnleft.BackColor = Color.Green; btnstop.BackColor = Color.Red;
-            //btnback.Enabled = false; //btnleft.Enabled = false;
-            //btnright.Enabled = false; btnstraight.Enabled = false;
         }
 
         private void btnleft_MouseUp(object sender, MouseEventArgs e)
@@ -364,14 +347,6 @@ namespace InterfacePC
             btnright.Enabled = true; btnstraight.Enabled = true;
         }
 
-        private void btnback_Click(object sender, EventArgs e)
-        {
-            //UART.Write("l00000000");
-            //btnback.BackColor = Color.Green; btnstop.BackColor = Color.Red;
-            ////btnback.Enabled = false; btnright.Enabled = false;
-            //btnleft.Enabled = false; btnstraight.Enabled = false;                      
-        }
-
         private void btnback_MouseUp(object sender, MouseEventArgs e)
         {
             UART.Write("d00000000");
@@ -382,14 +357,6 @@ namespace InterfacePC
             btnright.Enabled = true; btnstraight.Enabled = true;
         }
 
-        private void btnright_Click(object sender, EventArgs e)
-        {
-            //UART.Write("p00000000");
-            //btnright.BackColor = Color.Green; btnstop.BackColor = Color.Red;
-            //btnleft.Enabled = false; btnstraight.Enabled = false;
-            ////btnright.Enabled = false;
-            //btnback.Enabled = false;
-        }
         private void btnright_MouseUp(object sender, MouseEventArgs e)
         {
             UART.Write("d00000000");
@@ -400,7 +367,6 @@ namespace InterfacePC
             btnright.Enabled = true; btnstraight.Enabled = true;
         }
 
-
         private void btnstop_Click(object sender, EventArgs e)
         {
             UART.Write("d00000000");
@@ -410,7 +376,6 @@ namespace InterfacePC
             btnback.Enabled = true; btnleft.Enabled = true;
             btnright.Enabled = true; btnstraight.Enabled = true;
         }
-
 
         private void btnstraight_MouseDown(object sender, MouseEventArgs e)
         {
@@ -742,7 +707,7 @@ namespace InterfacePC
             if (timeUp == 1 && tempTimeUp >= 0)
             {
                 char_container.Value = Convert.ToInt16(tempTimeUp * 100 / time - 0.5);
-                label1.Text = string.Format("{0:00}", Convert.ToInt16(tempTimeUp * 100 / time - 0.5));
+                //label1.Text = string.Format("{0:00}", Convert.ToInt16(tempTimeUp * 100 / time - 0.5));
             }
             else char_container.Value = 0;
         }

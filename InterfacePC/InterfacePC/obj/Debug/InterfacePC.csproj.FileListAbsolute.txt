@@ -97,3 +97,15 @@ C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfaceP
 C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.CopyComplete
 C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfacePC.exe
 C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfacePC.pdb
+C:\Users\admin\Desktop\Submit code\Latest-code-\InterfacePC\InterfacePC\bin\Debug\InterfacePC.exe
+C:\Users\admin\Desktop\Submit code\Latest-code-\InterfacePC\InterfacePC\bin\Debug\InterfacePC.pdb
+C:\Users\admin\Desktop\Submit code\Latest-code-\InterfacePC\InterfacePC\bin\Debug\ZedGraph.dll
+C:\Users\admin\Desktop\Submit code\Latest-code-\InterfacePC\InterfacePC\bin\Debug\ZedGraph.Web.dll
+C:\Users\admin\Desktop\Submit code\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csprojAssemblyReference.cache
+C:\Users\admin\Desktop\Submit code\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.Form1.resources
+C:\Users\admin\Desktop\Submit code\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.Properties.Resources.resources
+C:\Users\admin\Desktop\Submit code\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.GenerateResource.cache
+C:\Users\admin\Desktop\Submit code\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.CoreCompileInputs.cache
+C:\Users\admin\Desktop\Submit code\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.CopyComplete
+C:\Users\admin\Desktop\Submit code\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.exe
+C:\Users\admin\Desktop\Submit code\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.pdb

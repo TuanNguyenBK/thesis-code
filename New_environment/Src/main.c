@@ -304,7 +304,6 @@ int main(void)
 		Check_Start_Button();	
 		Send_Data();
 		Settings_agr();
-		
 		if (start==1)
 			{		
 				//* Auto *//
@@ -313,7 +312,6 @@ int main(void)
 					duty5=tmp_duty5;duty4=90;
 					if(zigzac_flat==0)Find_Wall();
 					else Zigziag_Mode();
-					//Zigziag_Mode();
 				}
 				//* Manual *//
 				if(au==0)
@@ -433,7 +431,7 @@ void Settings_agr (void)
 		Kp=0.9;Ki=0.6;Kd=0.0002;	       //Slave
 		Kp2=0.06;Ki2=0.6;Kd2=0.0001;	 	//Master
 		//*set up setpoint position PID*//
-		des_position_left=700;des_position_right=710;		
+		des_position_left=700;des_position_right=730;		
 		//Kp_Pos=0.3;Ki_Pos=0.08;Kd_Pos=0;
 		Kp_Pos=0.3;Ki_Pos=0.3;Kd_Pos=0;
 }
@@ -451,11 +449,11 @@ void Find_Wall(void)
 	}
 	else if( HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1) == 0){
 		loop_tmp++;loop_once_1=0;
-		if(loop_tmp>8){loop_tmp=0;Stop();HAL_Delay(50);Go_Right();HAL_Delay(700);Stop();}}
+		if(loop_tmp>15){loop_tmp=0;Stop();HAL_Delay(50);Go_Right();HAL_Delay(700);Stop();}}
 	else if ( HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_9) == 0) {
 		loop_tmp++;loop_once_1=0;
-		if(loop_tmp>8){loop_tmp=0;Stop();HAL_Delay(50);Go_Left();HAL_Delay(700);Stop();}}
-	else if (Distance< 2|| Stuck_For_Straight()==1||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 1) {
+		if(loop_tmp>15){loop_tmp=0;Stop();HAL_Delay(50);Go_Left();HAL_Delay(700);Stop();}}
+	else if (Distance< 3|| Stuck_For_Straight()==1||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 1) {
 			loop_tmp=0;loop_once_1=0;Stop();HAL_Delay(50);Go_Left();HAL_Delay(1000);Stop();}
 	else {
 		loop_tmp=0;
@@ -494,7 +492,7 @@ void Find_Wall(void)
 }
 
 void Zigziag_Mode(void)
-{						Sonic();//||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1) == 0||HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_9) == 0
+{						Sonic();	
 						if(Stuck_For_Back()==1)
 						{
 							Stop();
@@ -508,7 +506,7 @@ void Zigziag_Mode(void)
 										if(stop1==1)
 											 {Stop();HAL_Delay(200);Stop();stop1=0;
 												//if(C==0&&D==0){Stop();stop1=0;}
-												if(count_right_wall>20&&count_left_wall>20){
+												if(count_right_wall>30){
 													a=1-a;count_right_wall=0;count_left_wall=0;}
 												if(a==0){left=1;right=0;count_right_wall=0;}								//* co quay trai, phai cua xe
 												else{left=0;right=1;count_left_wall=0;}														
@@ -532,23 +530,24 @@ void Zigziag_Mode(void)
 											else if(left==1&&cont<3)Deg_90_left=1;		//*xe quay trái 90 lan 1 & 3
 											else if (cont>=3)
 											{cont=0;a=1-a;stop1=1;}										//*  sau khi quay xong 2 lan, bat co` trai phai
-											else if (Deg_90_left==0){
-												Go_Straight();													//* cho xe di thang sau khi hoan thanh sau 2 lan quay
-												Sonic_Left();
-												if(Distance_left<9)count_left_wall++;
+											else if (Deg_90_left==0){									//* cho xe di thang sau khi hoan thanh sau 2 lan quay					
+//												Sonic_Left();	
+//												if(Distance_left<9)count_left_wall++;
+												Go_Straight();	
 											}
 										}
 										else 		//* xe quay phai
 										{
+				
 											if(cont==1)
 												{stop1=1;Go_Straight();if(count_time_delay>350){Stop();HAL_Delay(500);cont++;right=1;count_time_delay=0;}}
 											else if(right==1&&cont<3)Deg_90_right=1;
 											else if (cont>=3)
 											{cont=0;a=1-a;stop1=1;}
-											else if (Deg_90_right==0){
-												Go_Straight();
-												Sonic_Right();
+											else if (Deg_90_right==0){	
+												Sonic_Right();												
 												if(Distance_right<9)count_right_wall++;
+												Go_Straight();
 											}
 										}	
 									}	
@@ -628,11 +627,11 @@ Err2=-Err2;
 pros2=1;
 loop=1;Output2=110;
 }
-else if(Err2>-5&&loop==1)
+else if(Err2>-10&&loop==1)
 {pros2=0;Deg_90_left=0;cont++;new_setpoint_position=0;
 duty2=0;left=0;loop=0;HAL_Delay(100);Stop();}
 Output2 = Output2+Kp_Pos*Err2+Ki_Pos*Sampling_time*(Err2+pre_Err2)/(2000)+Kd_Pos*(Err2-2*pre_Err2+pre_pre_Err2)*inv_Sampling_time;
-if (Output2 >185) Output2=185;
+if (Output2 >180) Output2=180;
 if (Output2 <=0) Output2=0;
 if(Deg_90_left==1&&pros2==0)
 {duty3=Output2;duty2=0;}
@@ -653,11 +652,11 @@ Err3=-Err3;
 pros3=1;
 loop1=1;Output3=100;
 }
-else if(Err3>-5&&loop1==1)
+else if(Err3>-10&&loop1==1)
 {pros3=0;Deg_90_right=0;cont++;new_setpoint_position=0;
 duty0=0;right=0;loop1=0;HAL_Delay(100);Stop();}
 Output3 = Output3+Kp_Pos*Err2+Ki_Pos*Sampling_time*(Err2+pre_Err2)/(2000)+Kd_Pos*(Err2-2*pre_Err2+pre_pre_Err2)*inv_Sampling_time;
-if (Output3 >185) Output3=185;
+if (Output3 >170) Output3=170;
 if (Output3 <=0) Output3=0;
 if(Deg_90_right==1&&pros3==0)
 {duty1=Output3;duty0=0;}
@@ -1080,6 +1079,7 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7|GPIO_PIN_10, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_RESET);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);

@@ -56,7 +56,6 @@
             this.lblwarn = new System.Windows.Forms.Label();
             this.pictureBox9 = new System.Windows.Forms.PictureBox();
             this.btnstraight = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
             this.P4 = new System.Windows.Forms.Panel();
             this.pictureBox23 = new System.Windows.Forms.PictureBox();
             this.panel10 = new System.Windows.Forms.Panel();
@@ -365,7 +364,6 @@
             this.btnback.Size = new System.Drawing.Size(75, 43);
             this.btnback.TabIndex = 4;
             this.btnback.UseVisualStyleBackColor = false;
-            this.btnback.Click += new System.EventHandler(this.btnback_Click);
             this.btnback.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnback_MouseDown);
             this.btnback.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnback_MouseUp);
             // 
@@ -392,7 +390,6 @@
             this.btnright.Size = new System.Drawing.Size(75, 44);
             this.btnright.TabIndex = 1;
             this.btnright.UseVisualStyleBackColor = false;
-            this.btnright.Click += new System.EventHandler(this.btnright_Click);
             this.btnright.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnright_MouseDown);
             this.btnright.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnright_MouseUp);
             // 
@@ -406,7 +403,6 @@
             this.btnleft.Size = new System.Drawing.Size(77, 43);
             this.btnleft.TabIndex = 0;
             this.btnleft.UseVisualStyleBackColor = false;
-            this.btnleft.Click += new System.EventHandler(this.btnleft_Click);
             this.btnleft.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnleft_MouseDown);
             this.btnleft.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnleft_MouseUp);
             // 
@@ -521,18 +517,8 @@
             this.btnstraight.Size = new System.Drawing.Size(75, 45);
             this.btnstraight.TabIndex = 3;
             this.btnstraight.UseVisualStyleBackColor = false;
-            this.btnstraight.Click += new System.EventHandler(this.btnstraight_Click);
             this.btnstraight.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnstraight_MouseDown);
             this.btnstraight.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnstraight_MouseUp);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(139, 146);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(46, 16);
-            this.label1.TabIndex = 12;
-            this.label1.Text = "label1";
             // 
             // P4
             // 
@@ -923,7 +909,6 @@
             // 
             // P1
             // 
-            this.P1.Controls.Add(this.label1);
             this.P1.Controls.Add(this.stt);
             this.P1.Controls.Add(this.pictureBox7);
             this.P1.Controls.Add(this.pictureBox6);
@@ -1661,9 +1646,10 @@
             this.Controls.Add(this.P4);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.panel5);
+            this.Cursor = System.Windows.Forms.Cursors.Default;
             this.Font = new System.Drawing.Font("Lucida Sans Unicode", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.KeyPreview = true;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
@@ -1815,7 +1801,6 @@
         private System.Windows.Forms.PictureBox pictureBox24;
         private Bunifu.Framework.UI.BunifuFlatButton btnIntroduce;
         private Bunifu.Framework.UI.BunifuFlatButton btnManual;
-        private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel P7;
         private System.Windows.Forms.PictureBox pictureBox8;
         private Bunifu.Framework.UI.BunifuCircleProgressbar status2;
