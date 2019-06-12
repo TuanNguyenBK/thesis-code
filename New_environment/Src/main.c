@@ -17,7 +17,7 @@ DMA_HandleTypeDef hdma_usart2_rx;
 /* Private variables ---------------------------------------------------------*/
 uint8_t send_data[20], send_data_temp[20],i=0,receive_data[11],echo_receive_data[1],count=0;
 char* data="92345\r";
-uint16_t duty0=0,duty1=0,duty2=0,duty3=0,duty4=0,tmp_duty4=0,duty5=0,tmp_duty5=300,C=0,D=0,Output=0,Output1=0;
+uint16_t duty0=0,duty1=0,duty2=0,duty3=0,duty4=0,tmp_duty4=0,duty5=0,tmp_duty5=400,C=0,D=0,Output=0,Output1=0;
 uint16_t Output2=0,Output3=0;
 uint16_t start_hour=0,start_minute=0,time_out=0;
 uint32_t pre_Pulse=0,Pulse=0,pulse=0,p=0,TocDoDat=0,Sampling_time=20,inv_Sampling_time=50;
@@ -295,7 +295,10 @@ int main(void)
 	 HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_2);
 	 HAL_TIM_Base_Start_IT(&htim2);
 	 HAL_UART_Receive_DMA(&huart2,receive_data,11);
-
+//while(1)
+//{
+//	RTC_SetTime(11,0,0,1,9,6,19);
+//}
   while (1)
   {
 		RTC_GetTime();	
@@ -327,7 +330,7 @@ int main(void)
 }
 
 int Stuck_For_Straight(){
-		if((Output>200||Output1>200||Output2>200||Output3>200)&&(C==0&&D==0))
+		if((Output>280||Output1>280||Output2>280||Output3>280)&&(C==0&&D==0))
 		{stuck=1;}
 		else stuck=0;
 		return stuck;
@@ -352,7 +355,7 @@ void Get_Battery(void){
 			HAL_ADC_Start_IT(&hadc1);
 			HAL_Delay(50);
 			HAL_ADC_Stop_IT(&hadc1);
-			//if(adc_value<3100){start=0;start_button=0;run=0;Stop();}
+			if(adc_value<3100){start=0;start_button=0;run=0;Stop();}
 }
 
 void Analyze_RecieveArray(void)
@@ -419,7 +422,7 @@ void Check_Start_Button(void)
 					if(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)==1){
 						if(start_button==0)
 									{start=1;au=1;run=1;start_button=1;duty5=tmp_duty5;duty4=tmp_duty4;}
-						else  {start=0;au=0;run=0;start_button=0;duty5=0;duty4=0;send_data[16]='s';zigzac_flat=0;}
+						else  {start=0;au=0;run=0;start_button=0;duty5=0;duty4=0;send_data[16]='s';zigzac_flat=0;cont=0;}// add cont=0
 					}
 			}
 }
@@ -531,9 +534,9 @@ void Zigziag_Mode(void)
 											else if (cont>=3)
 											{cont=0;a=1-a;stop1=1;}										//*  sau khi quay xong 2 lan, bat co` trai phai
 											else if (Deg_90_left==0){									//* cho xe di thang sau khi hoan thanh sau 2 lan quay					
-//												Sonic_Left();	
-//												if(Distance_left<9)count_left_wall++;
+												//Sonic_Left();	
 												Go_Straight();	
+												//if(Distance_left<9)count_left_wall++;
 											}
 										}
 										else 		//* xe quay phai
@@ -546,8 +549,8 @@ void Zigziag_Mode(void)
 											{cont=0;a=1-a;stop1=1;}
 											else if (Deg_90_right==0){	
 												Sonic_Right();												
-												if(Distance_right<9)count_right_wall++;
 												Go_Straight();
+												if(Distance_right<9)count_right_wall++;
 											}
 										}	
 									}	
@@ -585,7 +588,7 @@ void Stop(void)
 
 void Motorpid_1(void)
 {
-rSpeed=(p-pre_Pulse)*3000/400; //tinh van toc (trong sampling time)
+rSpeed=(p-pre_Pulse)*3000/400; //tinh van toc (trong sampling time) banh xe phai
 pre_Pulse=p;
 Err=rSpeed1-rSpeed;
 Output = Output+Kp*Err+Ki*Sampling_time*(Err+pre_Err)/(2000)+Kd*(Err-2*pre_Err+pre_pre_Err)*inv_Sampling_time;
@@ -602,7 +605,7 @@ pre_Err=Err;
 
 void Motorpid_2(void)
 {
-rSpeed1=(p1-pre_Pulse1)*3000/400; //tinh van toc (trong sampling time)
+rSpeed1=(p1-pre_Pulse1)*3000/400; //tinh van toc (trong sampling time) banh xe trai
 pre_Pulse1=p1;
 Err1=des_Speed-rSpeed1;
 Output1 = Output1+Kp2*Err1+Ki2*Sampling_time*(Err1+pre_Err1)/(2000)+Kd2*(Err1-2*pre_Err1+pre_pre_Err1)*inv_Sampling_time;
@@ -625,7 +628,7 @@ if(Err2<0)
 {
 Err2=-Err2;
 pros2=1;
-loop=1;Output2=110;
+loop=1;Output2=120;
 }
 else if(Err2>-10&&loop==1)
 {pros2=0;Deg_90_left=0;cont++;new_setpoint_position=0;
@@ -650,13 +653,13 @@ if(Err3<0)
 {
 Err3=-Err3;
 pros3=1;
-loop1=1;Output3=100;
+loop1=1;Output3=110;
 }
 else if(Err3>-10&&loop1==1)
 {pros3=0;Deg_90_right=0;cont++;new_setpoint_position=0;
 duty0=0;right=0;loop1=0;HAL_Delay(100);Stop();}
 Output3 = Output3+Kp_Pos*Err2+Ki_Pos*Sampling_time*(Err2+pre_Err2)/(2000)+Kd_Pos*(Err2-2*pre_Err2+pre_pre_Err2)*inv_Sampling_time;
-if (Output3 >170) Output3=170;
+if (Output3 >180) Output3=180;
 if (Output3 <=0) Output3=0;
 if(Deg_90_right==1&&pros3==0)
 {duty1=Output3;duty0=0;}
@@ -667,6 +670,7 @@ if(Deg_90_right==0)
 pre_pre_Err3= pre_Err3;
 pre_Err3=Err3; 
 }
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim->Instance==htim2.Instance)
@@ -688,7 +692,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		}
 		pulse=0;pulse1=0;
 		Duty_Config();	
-	
 	}
 }
 

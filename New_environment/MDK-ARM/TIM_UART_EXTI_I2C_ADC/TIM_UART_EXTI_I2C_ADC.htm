@@ -3,7 +3,7 @@
 <title>Static Call Graph - [TIM_UART_EXTI_I2C_ADC\TIM_UART_EXTI_I2C_ADC.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image TIM_UART_EXTI_I2C_ADC\TIM_UART_EXTI_I2C_ADC.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060061: Last Updated: Wed Jun 05 10:02:28 2019
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060061: Last Updated: Wed Jun 12 21:18:16 2019
 <BR><P>
 <H3>Maximum Stack Usage =        328 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -490,7 +490,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f407xx.o(RESET)
 </UL>
-<P><STRONG><a name="[6e]"></a>Check_Start_Button</STRONG> (Thumb, 92 bytes, Stack size 8 bytes, main.o(i.Check_Start_Button))
+<P><STRONG><a name="[6e]"></a>Check_Start_Button</STRONG> (Thumb, 94 bytes, Stack size 8 bytes, main.o(i.Check_Start_Button))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = Check_Start_Button &rArr; HAL_Delay
 </UL>
 <BR>[Calls]<UL><LI><a href="#[6f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
@@ -571,12 +571,13 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[5b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[78]"></a>Get_Battery</STRONG> (Thumb, 30 bytes, Stack size 8 bytes, main.o(i.Get_Battery))
-<BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = Get_Battery &rArr; HAL_Delay
+<P><STRONG><a name="[78]"></a>Get_Battery</STRONG> (Thumb, 56 bytes, Stack size 16 bytes, main.o(i.Get_Battery))
+<BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = Get_Battery &rArr; HAL_Delay
 </UL>
 <BR>[Calls]<UL><LI><a href="#[7a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_ADC_Stop_IT
 <LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_ADC_Start_IT
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_Delay
+<LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stop
 </UL>
 <BR>[Called By]<UL><LI><a href="#[5b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
@@ -1356,6 +1357,7 @@ Global Symbols
 <LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stuck_For_Back
 <LI><a href="#[cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Right_Position_PID
 <LI><a href="#[ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Left_Position_PID
+<LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Get_Battery
 <LI><a href="#[73]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Find_Wall
 <LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Analyze_RecieveArray
 </UL>
@@ -1368,7 +1370,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Zigziag_Mode
 </UL>
 
-<P><STRONG><a name="[75]"></a>Stuck_For_Straight</STRONG> (Thumb, 48 bytes, Stack size 0 bytes, main.o(i.Stuck_For_Straight))
+<P><STRONG><a name="[75]"></a>Stuck_For_Straight</STRONG> (Thumb, 52 bytes, Stack size 0 bytes, main.o(i.Stuck_For_Straight))
 <BR><BR>[Called By]<UL><LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Zigziag_Mode
 <LI><a href="#[73]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Find_Wall
 </UL>
@@ -1437,7 +1439,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f407xx.o(RESET)
 </UL>
-<P><STRONG><a name="[f9]"></a>Zigziag_Mode</STRONG> (Thumb, 444 bytes, Stack size 32 bytes, main.o(i.Zigziag_Mode))
+<P><STRONG><a name="[f9]"></a>Zigziag_Mode</STRONG> (Thumb, 448 bytes, Stack size 32 bytes, main.o(i.Zigziag_Mode))
 <BR><BR>[Stack]<UL><LI>Max Depth = 152<LI>Call Chain = Zigziag_Mode &rArr; Sonic &rArr; __aeabi_dmul &rArr; _double_epilogue &rArr; _double_round
 </UL>
 <BR>[Calls]<UL><LI><a href="#[6f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
