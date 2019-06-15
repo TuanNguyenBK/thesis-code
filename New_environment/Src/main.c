@@ -15,18 +15,18 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_rx;
 
 /* Private variables ---------------------------------------------------------*/
-uint8_t send_data[20], send_data_temp[20],i=0,receive_data[11],echo_receive_data[1],count=0;
+uint8_t send_data[25], send_data_temp[25],i=0,receive_data[11],echo_receive_data[1],count=0;
 char* data="92345\r";
 uint16_t duty0=0,duty1=0,duty2=0,duty3=0,duty4=0,tmp_duty4=0,duty5=0,tmp_duty5=400,C=0,D=0,Output=0,Output1=0;
 uint16_t Output2=0,Output3=0;
 uint16_t start_hour=0,start_minute=0,time_out=0;
 uint32_t pre_Pulse=0,Pulse=0,pulse=0,p=0,TocDoDat=0,Sampling_time=20,inv_Sampling_time=50;
-uint32_t pre_Pulse1=0,Pulse1=0,pulse1=0,p1=0,TocDoDat1=0;
+uint32_t pre_Pulse1=0,Pulse1=0,pulse1=0,p1=0,previous_pulse1=0, TocDoDat1=0;
 uint32_t time_copy=0,time=0,time_right=0,time_left=0,time_right_copy=0,time_left_copy=0,count_right_wall=0,count_left_wall=0;
-uint16_t count_time_delay=0,count_time_ADC=0,count_stuck=0;
+uint16_t count_time_delay=0,count_time_ADC=0,count_stuck=0,count_sample_time=0;
 
 float Distance,Distance_right,Distance_left,Kp,Ki,Kd,Kp2,Ki2,Kd2;
-float Kp_Pos,Ki_Pos,Kd_Pos;
+float Kp_Pos,Ki_Pos,Kd_Pos,Kp_Pos_1,Ki_Pos_1,Kd_Pos_1;
 signed long des_Speed=400,des_position_left=700,des_position_right=690,tmp_position_left=0,tmp_position_right=0;
 signed long	rSpeed=0,Err=0,pre_Err=0,pre_pre_Err=0;
 signed long rSpeed1=0,Err1=0,pre_Err1=0,pre_pre_Err1=0;
@@ -39,6 +39,7 @@ int	Deg_90_left=0,Deg_90_right=0,left=0,right=0,a=0,stop1=1,stop2=0,report=0,b=0
 int stuck=0,stuck_back=0,new_setpoint_position=0,zigzac_flat=0,start_zigzac=1, loop_once=0,loop_once_1=0;
 uint16_t stop_hour=0,stop_minute=0;
 uint16_t adc_value,adc,loop_tmp=0;
+uint16_t length=0, angle=0,angle_tmp=0;
 
 	//RTC DS3231
 #define DS3231_ADD (0x68<<1)
@@ -115,12 +116,13 @@ void Get_Battery(void);
 void Find_Wall(void);
 void Check_Start_Button(void);
 void Settings_agr(void);
+void Get_Coordinate(void);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 uint8_t RTC_BCD2DEC(uint8_t e);
 uint8_t RTC_DEC2BCD(uint8_t e);
-void DEC_ASCII_3(uint16_t adc, uint8_t send_data_temp[20], uint8_t i);
-void DEC_ASCII_2(uint8_t num, uint8_t send_data_temp[20], uint8_t i);
+void DEC_ASCII_3(uint16_t adc, uint8_t send_data_temp[25], uint8_t i);
+void DEC_ASCII_2(uint8_t num, uint8_t send_data_temp[25], uint8_t i);
 void I2C_WriteBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR,uint8_t pDat[], uint8_t sizebuf);
 void I2C_ReadBuffer(I2C_HandleTypeDef hi, uint8_t DEV_ADDR, uint8_t pData[], uint8_t sizebuf);
 void RTC_GetTime(void);
@@ -128,14 +130,14 @@ void RTC_SetTime(uint8_t hour,uint8_t min,uint8_t sec,uint8_t day,uint8_t date,u
 void QMC5883_GetData(void);
 void QMC5883_Config(void);
 
-void DEC_ASCII_3(uint16_t adc, uint8_t send_data_temp[20], uint8_t i)
+void DEC_ASCII_3(uint16_t adc, uint8_t send_data_temp[25], uint8_t i)
 {
 	send_data_temp[i]=adc/100+48;
 	send_data_temp[i+1]=(adc%100)/10+48;
 	send_data_temp[i+2]=adc%10+48;
 }
 
-void DEC_ASCII_2(uint8_t num, uint8_t send_data_temp[20], uint8_t i)
+void DEC_ASCII_2(uint8_t num, uint8_t send_data_temp[25], uint8_t i)
 {
 	send_data_temp[i]=num/10+48;
 	send_data_temp[i+1]=num%10+48;
@@ -209,10 +211,8 @@ void QMC5883_GetData(void)
 	QMC5883.I2C_Buffer_Write[0]=0x00;
 	I2C_WriteBuffer(hi2c1,(uint16_t) QMC5883_ADDR,QMC5883.I2C_Buffer_Write,1);
 	while (HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY);
-
 	HAL_Delay(200);
 	I2C_ReadBuffer(hi2c1,(uint16_t) QMC5883_ADDR,QMC5883.I2C_Buffer_Read,6);
-	
 	QMC5883.x = (QMC5883.I2C_Buffer_Read[1]<<8)+QMC5883.I2C_Buffer_Read[0];
 	QMC5883.y = (QMC5883.I2C_Buffer_Read[3]<<8)+QMC5883.I2C_Buffer_Read[2];
 	QMC5883.z = (QMC5883.I2C_Buffer_Read[5]<<8)+QMC5883.I2C_Buffer_Read[4];
@@ -285,6 +285,8 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
+	//QMC5883_Config();
+	
 
 
 	 HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1);
@@ -297,12 +299,14 @@ int main(void)
 	 HAL_UART_Receive_DMA(&huart2,receive_data,11);
 //while(1)
 //{
-//	RTC_SetTime(11,0,0,1,9,6,19);
+//	RTC_SetTime(17,40,0,6,15,6,19);
 //}
   while (1)
   {
-		RTC_GetTime();	
+		//QMC5883_GetData();
+		Get_Coordinate();
 		Get_Battery();
+		RTC_GetTime();	
 		Analyze_RecieveArray();
 		Check_Start_Button();	
 		Send_Data();
@@ -326,7 +330,7 @@ int main(void)
 						if(receive_data[0]=='l')Go_Back();		//di lui
 				}
 			}
-  }
+		}
 }
 
 int Stuck_For_Straight(){
@@ -349,9 +353,16 @@ int Stuck_For_Back(void){
 		return stuck_back;
 }
 
+void Get_Coordinate(void){
+	//length = pulse1*6.5*3.14/400;
+	if(count_sample_time>5)
+	{
+			if(motor_straight==1){length = pulse1*6.5*3.14/400; angle = angle_tmp;}
+			pulse1=0;count_sample_time=0;
+	}
+}
+
 void Get_Battery(void){
-			//if(count_time_ADC>50){
-			count_time_ADC=0;
 			HAL_ADC_Start_IT(&hadc1);
 			HAL_Delay(50);
 			HAL_ADC_Stop_IT(&hadc1);
@@ -410,8 +421,13 @@ void Send_Data(void)
 		DEC_ASCII_2(DS3231.hour,send_data,10);		//hours
 		DEC_ASCII_2(DS3231.date,send_data,12);		//day
 		DEC_ASCII_2(DS3231.month,send_data,14);		//month
-		send_data[17]= '\r';
-		HAL_UART_Transmit_IT(&huart2,(uint8_t  *)send_data,18);
+		//send coordinates of machine
+		DEC_ASCII_3(length,send_data,17);
+		DEC_ASCII_3(angle,send_data,20);
+	
+		send_data[23]= '\r';			//send_data[17]= '\r';	
+		HAL_UART_Transmit_IT(&huart2,(uint8_t  *)send_data,24);
+		HAL_Delay(50);
 }
 
 void Check_Start_Button(void)
@@ -434,9 +450,10 @@ void Settings_agr (void)
 		Kp=0.9;Ki=0.6;Kd=0.0002;	       //Slave
 		Kp2=0.06;Ki2=0.6;Kd2=0.0001;	 	//Master
 		//*set up setpoint position PID*//
-		des_position_left=700;des_position_right=730;		
+		des_position_left=700;des_position_right=770;		
 		//Kp_Pos=0.3;Ki_Pos=0.08;Kd_Pos=0;
-		Kp_Pos=0.3;Ki_Pos=0.3;Kd_Pos=0;
+		Kp_Pos=0.3;Ki_Pos=0.3;Kd_Pos=0;	//left 
+		Kp_Pos_1=0.2;Ki_Pos_1=0.15;Kd_Pos_1=0; //right
 }
 void Find_Wall(void)
 {
@@ -456,7 +473,7 @@ void Find_Wall(void)
 	else if ( HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_9) == 0) {
 		loop_tmp++;loop_once_1=0;
 		if(loop_tmp>15){loop_tmp=0;Stop();HAL_Delay(50);Go_Left();HAL_Delay(700);Stop();}}
-	else if (Distance< 3|| Stuck_For_Straight()==1||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 1) {
+	else if (Distance< 3|| Stuck_For_Straight()==1 || HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 1||HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_2) == 1||HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_13) == 1) {
 			loop_tmp=0;loop_once_1=0;Stop();HAL_Delay(50);Go_Left();HAL_Delay(1000);Stop();}
 	else {
 		loop_tmp=0;
@@ -504,7 +521,7 @@ void Zigziag_Mode(void)
 							stop2=1;
 							Go_Straight();HAL_Delay(4000);Stop();HAL_Delay(50);
 						}
-						else if(Distance< 4 || Stuck_For_Straight()==1 || start_zigzac==1||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 1)
+						else if(Distance< 4 || Stuck_For_Straight()==1 || start_zigzac==1||HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == 1||HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_2) == 1||HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_13) == 1)
 									{start_zigzac=0;
 										if(stop1==1)
 											 {Stop();HAL_Delay(200);Stop();stop1=0;
@@ -580,7 +597,7 @@ void Stop(void)
 	duty0=0;duty1=0;duty2=0;duty3=0;	
 	Output=0;Output1=0;Pulse=0;Pulse1=0;
 	pre_Pulse=0;pre_Pulse1=0;p=1;p1=0;
-	pulse=0;pulse1=0;rSpeed1=0;rSpeed=0;
+	rSpeed1=0;rSpeed=0;
 	pre_pre_Err= 0;pre_Err=0; 
 	pre_pre_Err1= 0;pre_Err1=0;
 	pre_pre_Err2= 0;pre_Err2=0;
@@ -631,7 +648,10 @@ pros2=1;
 loop=1;Output2=120;
 }
 else if(Err2>-10&&loop==1)
-{pros2=0;Deg_90_left=0;cont++;new_setpoint_position=0;
+{
+if(angle_tmp<Pulse1*9/70)angle_tmp=angle_tmp+360;
+angle_tmp=angle_tmp-Pulse1*9/70;
+pros2=0;Deg_90_left=0;cont++;new_setpoint_position=0;
 duty2=0;left=0;loop=0;HAL_Delay(100);Stop();}
 Output2 = Output2+Kp_Pos*Err2+Ki_Pos*Sampling_time*(Err2+pre_Err2)/(2000)+Kd_Pos*(Err2-2*pre_Err2+pre_pre_Err2)*inv_Sampling_time;
 if (Output2 >180) Output2=180;
@@ -656,10 +676,13 @@ pros3=1;
 loop1=1;Output3=110;
 }
 else if(Err3>-10&&loop1==1)
-{pros3=0;Deg_90_right=0;cont++;new_setpoint_position=0;
-duty0=0;right=0;loop1=0;HAL_Delay(100);Stop();}
-Output3 = Output3+Kp_Pos*Err2+Ki_Pos*Sampling_time*(Err2+pre_Err2)/(2000)+Kd_Pos*(Err2-2*pre_Err2+pre_pre_Err2)*inv_Sampling_time;
-if (Output3 >180) Output3=180;
+{
+angle_tmp=angle_tmp+Pulse*9/70;	
+if(angle_tmp>360)angle_tmp=angle_tmp-360;
+pros3=0;Deg_90_right=0;cont++;new_setpoint_position=0;
+duty0=0;right=0;loop1=0;HAL_Delay(90);Stop();}
+Output3 = Output3+Kp_Pos_1*Err2+Ki_Pos_1*Sampling_time*(Err2+pre_Err2)/(2000)+Kd_Pos_1*(Err2-2*pre_Err2+pre_pre_Err2)*inv_Sampling_time;
+if (Output3 >175) Output3=175;
 if (Output3 <=0) Output3=0;
 if(Deg_90_right==1&&pros3==0)
 {duty1=Output3;duty0=0;}
@@ -675,10 +698,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim->Instance==htim2.Instance)
 	{	
-		count_time_ADC++;
+		count_sample_time++;
 		if(cont==1)count_time_delay++;
-		C=3000*pulse/400;
-		D=3000*pulse1/400;
 		if(motor_straight==1||motor_back==1)
 		{
 		count_stuck=0;
@@ -690,14 +711,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		Motor_Left_Position_PID();
 		Motor_Right_Position_PID();
 		}
-		pulse=0;pulse1=0;
 		Duty_Config();	
+
 	}
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-		if(GPIO_Pin==GPIO_PIN_5)
+	if(GPIO_Pin==GPIO_PIN_5)
 		{
 			if(motor_back==1||motor_straight==1||motor_left==1||motor_right==1){pulse++;p++;}
 			if(Deg_90_right==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_11) == 1)Pulse++;
@@ -706,6 +727,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		}
 		if(GPIO_Pin==GPIO_PIN_4)
 		{
+			//pulse1++;
 			if(motor_back==1||motor_straight==1||motor_left==1||motor_right==1){pulse1++;p1++;}
 			if(Deg_90_left==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12) == 0)Pulse1++;
 			if(Deg_90_left==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12) == 1)Pulse1--;
@@ -1029,6 +1051,7 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin : PA0 */
@@ -1068,6 +1091,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	
+	  /*Configure GPIO pins : PC2 PC13 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_13;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 	GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;

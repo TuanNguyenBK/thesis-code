@@ -90,6 +90,8 @@
             this.pictureBox7 = new System.Windows.Forms.PictureBox();
             this.pictureBox6 = new System.Windows.Forms.PictureBox();
             this.panel5 = new System.Windows.Forms.Panel();
+            this.pictureBox18 = new System.Windows.Forms.PictureBox();
+            this.btnMap = new System.Windows.Forms.Button();
             this.pictureBox17 = new System.Windows.Forms.PictureBox();
             this.btnHistory = new System.Windows.Forms.Button();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -135,6 +137,8 @@
             this.status3 = new Bunifu.Framework.UI.BunifuCircleProgressbar();
             this.pictureBox8 = new System.Windows.Forms.PictureBox();
             this.txtstatus3 = new System.Windows.Forms.RichTextBox();
+            this.PMap = new System.Windows.Forms.Panel();
+            this.label1 = new System.Windows.Forms.Label();
             this.mode.SuspendLayout();
             this.P3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox28)).BeginInit();
@@ -162,6 +166,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).BeginInit();
             this.panel5.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox18)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox17)).BeginInit();
             this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.logo)).BeginInit();
@@ -183,6 +188,7 @@
             this.P7.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imgreset)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox8)).BeginInit();
+            this.PMap.SuspendLayout();
             this.SuspendLayout();
             // 
             // cbxCom
@@ -956,6 +962,8 @@
             // panel5
             // 
             this.panel5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(39)))), ((int)(((byte)(40)))));
+            this.panel5.Controls.Add(this.pictureBox18);
+            this.panel5.Controls.Add(this.btnMap);
             this.panel5.Controls.Add(this.pictureBox17);
             this.panel5.Controls.Add(this.btnHistory);
             this.panel5.Controls.Add(this.panel2);
@@ -976,8 +984,37 @@
             this.panel5.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel5.Location = new System.Drawing.Point(0, 0);
             this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(169, 507);
+            this.panel5.Size = new System.Drawing.Size(169, 509);
             this.panel5.TabIndex = 12;
+            // 
+            // pictureBox18
+            // 
+            this.pictureBox18.BackColor = System.Drawing.Color.Gainsboro;
+            this.pictureBox18.Enabled = false;
+            this.pictureBox18.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox18.Image")));
+            this.pictureBox18.Location = new System.Drawing.Point(13, 462);
+            this.pictureBox18.Name = "pictureBox18";
+            this.pictureBox18.Size = new System.Drawing.Size(31, 30);
+            this.pictureBox18.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox18.TabIndex = 27;
+            this.pictureBox18.TabStop = false;
+            // 
+            // btnMap
+            // 
+            this.btnMap.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(39)))), ((int)(((byte)(40)))));
+            this.btnMap.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnMap.FlatAppearance.BorderSize = 0;
+            this.btnMap.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnMap.Font = new System.Drawing.Font("Lucida Sans Unicode", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnMap.ForeColor = System.Drawing.Color.DimGray;
+            this.btnMap.Location = new System.Drawing.Point(3, 453);
+            this.btnMap.Name = "btnMap";
+            this.btnMap.Size = new System.Drawing.Size(166, 57);
+            this.btnMap.TabIndex = 26;
+            this.btnMap.Text = "           Map";
+            this.btnMap.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnMap.UseVisualStyleBackColor = false;
+            this.btnMap.Click += new System.EventHandler(this.btnMap_Click);
             // 
             // pictureBox17
             // 
@@ -1226,7 +1263,7 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(169, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(328, 74);
+            this.panel1.Size = new System.Drawing.Size(333, 74);
             this.panel1.TabIndex = 14;
             this.panel1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseClick);
             // 
@@ -1632,12 +1669,31 @@
             this.txtstatus3.TabIndex = 25;
             this.txtstatus3.Text = " 22-03             \t\t\n Start  9:50\t\t Stop  17:00";
             // 
+            // PMap
+            // 
+            this.PMap.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(70)))), ((int)(((byte)(52)))));
+            this.PMap.Controls.Add(this.label1);
+            this.PMap.Location = new System.Drawing.Point(172, 76);
+            this.PMap.Name = "PMap";
+            this.PMap.Size = new System.Drawing.Size(323, 423);
+            this.PMap.TabIndex = 17;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(132, 14);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(46, 16);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "label1";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(42)))), ((int)(((byte)(52)))));
-            this.ClientSize = new System.Drawing.Size(497, 507);
+            this.ClientSize = new System.Drawing.Size(502, 509);
+            this.Controls.Add(this.PMap);
             this.Controls.Add(this.P7);
             this.Controls.Add(this.P3);
             this.Controls.Add(this.P1);
@@ -1649,7 +1705,7 @@
             this.Cursor = System.Windows.Forms.Cursors.Default;
             this.Font = new System.Drawing.Font("Lucida Sans Unicode", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.KeyPreview = true;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
@@ -1693,6 +1749,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).EndInit();
             this.panel5.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox18)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox17)).EndInit();
             this.panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.logo)).EndInit();
@@ -1715,6 +1772,8 @@
             this.P7.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.imgreset)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox8)).EndInit();
+            this.PMap.ResumeLayout(false);
+            this.PMap.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1828,5 +1887,9 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.RichTextBox richTextBox2;
+        private System.Windows.Forms.PictureBox pictureBox18;
+        private System.Windows.Forms.Button btnMap;
+        private System.Windows.Forms.Panel PMap;
+        private System.Windows.Forms.Label label1;
     }
 }

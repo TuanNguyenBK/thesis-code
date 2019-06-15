@@ -19,12 +19,15 @@ namespace InterfacePC
         List<Panel> listPanel = new List<Panel>();
         SerialPort UART = new SerialPort();
         string InputData = String.Empty;
+        Pen myPen = new Pen(Color.AntiqueWhite);
+        Graphics map = null;
+        static int startX = 0, startY = 0,startTmpX=0,startTmpY=0, endX = 0, endY = 0, endTmpX=0,endTmpY=0, preMapDone=0;
+        static int angle = 180, length = 0, increment = 0;
+        float rad = 0;
         float Kp = 0, Ki = 0, Kd = 0;
-        double time = 0;
         int stopTemp = 0, timeOut=0,timeUp=0;
-        string Time = "0",set_point="", Mode = "a",startHour="00",startMin="00";
-        string data, nhan = "0";
-        double set = 0, set1 = 0;
+        string Time = "0",set_point="", Mode = "a",startHour="00",startMin="00",data, nhan = "0";
+        double set = 0, set1 = 0, time = 0;
         string Tam = "",battery="000",timer="000",container="",minute="00",hour="00",day="00",month="00",second="00";
         double[] Data = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         double[] Data_2 = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -46,6 +49,7 @@ namespace InterfacePC
         public Form1()
         {
             InitializeComponent();
+            map = PMap.CreateGraphics();
             string[] ports = SerialPort.GetPortNames();
             cbxCom.Items.AddRange(ports);
             UART.ReadTimeout = 2000;
@@ -53,7 +57,7 @@ namespace InterfacePC
             UART.BaudRate = 115200;
             UART.Parity = Parity.None;
             UART.StopBits = StopBits.One;
-            timer1.Interval = 100;
+            timer1.Interval = 300;
             //initial state of settings
             cbxLevel.Text = "Low";cbxTime.Text = "None";
             btnChay.Enabled = false;
@@ -66,11 +70,12 @@ namespace InterfacePC
             btnstop.Enabled = false; btnright.Enabled = false;
             btnstraight.Enabled = false;
             //initial state of panel
-            P1.Hide(); P2.Hide(); P3.Hide(); P4.Hide(); P6.Hide(); P5.Show();P8.Hide();
-            P5.BringToFront(); picturemenu.Hide(); //label1.Text = "tuannguyen"
-           // label1.Text = "";
+            P1.Hide(); P2.Hide(); P3.Hide(); P4.Hide(); P6.Hide(); P5.Show();P8.Hide();PMap.Hide();
+            P5.BringToFront(); picturemenu.Hide();
+            startX = PMap.Width / 2;startY = PMap.Height / 2;
+            //startTmpX = PMap.Width / 2; startTmpY = PMap.Height / 2;
+            //label1.Text = "";
         }
-
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -104,13 +109,12 @@ namespace InterfacePC
                 //read value
                 battery = Tam.Substring(1, 3);//tach so 
                 container = Tam.Substring(4,3);
-                //read time
+                //read time 
                 second = Tam.Substring(7, 2);
                 minute = Tam.Substring(9, 2);
                 hour = Tam.Substring(11, 2);
                 day = Tam.Substring(13, 2);
-                month = Tam.Substring(15, 2);
-
+                month = Tam.Substring(15, 2);   
                 ////trans to double
                 Data[0] = Convert.ToDouble(battery);
                 Data[1] = Convert.ToDouble(container);
@@ -118,8 +122,13 @@ namespace InterfacePC
                 Data[3] = Convert.ToDouble(hour);
                 Data[4] = Convert.ToDouble(day);
                 Data[5] = Convert.ToDouble(month);
+                //read coordinates of machine
+                Data[6] = Convert.ToDouble(Tam.Substring(18, 3)); //length
+                Data[7] = Convert.ToDouble(Tam.Substring(21, 3)); //angle
                 ////trans to int 
                 if (Data[0]<=100) char_battery.Value = Convert.ToInt16(Data[0]);
+                length = Convert.ToInt16(Data[6]);        //scale 2:1
+                angle = Convert.ToInt16(Data[7]);
                 //if (Data[1] <= 100) char_container.Value = Convert.ToInt16(Data[1]);
                 //show time
                 txtHr.Text = hour;
@@ -127,7 +136,19 @@ namespace InterfacePC
                 txtSec.Text = second;
                 if (Tam.Substring(17, 1) == "s" && stopTemp == 1)
                 { stopTemp = 0; btnDung_Click(sender,e);  }
- 
+                rad = (float)(angle * .017453292519);
+                endX = (int)(startX + (Math.Cos(rad) * length/2)+0.5);
+                endY = (int)(startY + (Math.Sin(rad) * length/2)+0.5);//017453292519
+                if (endX < 0) endX = 0;if (endY < 0) endY = 0;
+
+                StreamWriter write = new StreamWriter("map1", true);      //save coordinates of map
+                write.WriteLine(string.Format("{0:000}",startX) + "-" +
+                   string.Format("{0:000}", startY) + "-" + string.Format("{0:000}", endX) + 
+                   "-" + string.Format("{0:000}", endY)+"-"+angle.ToString()+"-"+length.ToString());
+                write.Close();
+                if(preMapDone==1)drawMap();
+                startX = endX; startY = endY;
+
                 BeginInvoke(new Action(() =>
                 {
                 }));
@@ -169,7 +190,11 @@ namespace InterfacePC
                 btnConnect.BackColor = Color.Green;
                 lblwarning.Text = "PLEASE SELECT YOUR OPTIONS."; lblwarn.Text = "";lblwarning.ForeColor = Color.Chocolate;
                 timer1.Enabled = true;
-                
+
+                startX = PMap.Width / 2; startY = PMap.Height / 2;preMapDone = 0;
+                //startTmpX = PMap.Width / 2; startTmpY = PMap.Height / 2;
+                File.Delete("map1");
+                StreamWriter write = new StreamWriter("map1", true);write.Close();
             }
             else
             {
@@ -232,8 +257,6 @@ namespace InterfacePC
             
             StreamWriter write1 = new StreamWriter("database", true);    // read 4 newest data
             write1.WriteLine(day + "-" + month + " Start  " + startHour + ":" + startMin + "      Stop  " + hour + ":" + minute + battery + Mode); write1.Close();
-           
-
         }
 
         private void btnChay_Click(object sender, EventArgs e)
@@ -412,75 +435,9 @@ namespace InterfacePC
         #endregion
 
         #region Tab in UI
-
-        private void btnConnecting_Click(object sender, EventArgs e)
-        {
-            P5.Hide(); P2.Hide(); P3.Hide(); P4.Hide();P7.Hide();
-            P1.Show(); P1.BringToFront();
-            lbltab.Text = "Connection Page";
-            btnConnecting.BackColor = Color.FromArgb(41, 39, 70);btnConnecting.ForeColor = Color.Aquamarine;
-            btnSetting.BackColor = Color.FromArgb(41, 39, 40); btnSetting.ForeColor = Color.DimGray;
-            btnController.BackColor = Color.FromArgb(41, 39, 40); btnController.ForeColor = Color.DimGray;
-            btnStatus.BackColor = Color.FromArgb(41, 39, 40); btnStatus.ForeColor = Color.DimGray;
-            btnHome.BackColor = Color.FromArgb(41, 39, 40); btnHome.ForeColor = Color.DimGray;
-            btnHistory.BackColor= Color.FromArgb(41, 39, 40); btnHistory.ForeColor = Color.DimGray;
-        }
-
-        private void btnSetting_Click(object sender, EventArgs e)
-        {
-            P1.Hide(); P5.Hide(); P3.Hide(); P4.Hide(); P7.Hide();
-            P2.Show(); P2.BringToFront();
-            lbltab.Text = "Settings Page";
-            btnConnecting.BackColor = Color.FromArgb(41, 39, 40); btnConnecting.ForeColor = Color.DimGray;
-            btnSetting.BackColor = Color.FromArgb(41, 39,70); btnSetting.ForeColor = Color.Aquamarine;
-            btnController.BackColor = Color.FromArgb(41, 39, 40); btnController.ForeColor = Color.DimGray;
-            btnStatus.BackColor = Color.FromArgb(41, 39, 40); btnStatus.ForeColor = Color.DimGray;
-            btnHome.BackColor = Color.FromArgb(41, 39, 40); btnHome.ForeColor = Color.DimGray;
-            btnHistory.BackColor = Color.FromArgb(41, 39, 40); btnHistory.ForeColor = Color.DimGray;
-        }
-
-        private void btnController_Click(object sender, EventArgs e)
-        {
-            P1.Hide(); P2.Hide(); P5.Hide(); P4.Hide(); P7.Hide();
-            P3.Show(); P3.BringToFront();
-            lbltab.Text = "Controller Page";
-            btnConnecting.BackColor = Color.FromArgb(41, 39, 40); btnConnecting.ForeColor = Color.DimGray;
-            btnSetting.BackColor = Color.FromArgb(41, 39, 40); btnSetting.ForeColor = Color.DimGray;
-            btnController.BackColor = Color.FromArgb(41, 39, 70); btnController.ForeColor = Color.Aquamarine;
-            btnStatus.BackColor = Color.FromArgb(41, 39, 40); btnStatus.ForeColor = Color.DimGray;
-            btnHome.BackColor = Color.FromArgb(41, 39, 40); btnHome.ForeColor = Color.DimGray;
-            btnHistory.BackColor = Color.FromArgb(41, 39, 40); btnHistory.ForeColor = Color.DimGray;
-        }
-
-        private void btnStatus_Click(object sender, EventArgs e)
-        {
-            P1.Hide(); P2.Hide(); P3.Hide(); P5.Hide(); P7.Hide();
-            P4.Show(); P4.BringToFront();
-            lbltab.Text = "Status Page";
-            btnConnecting.BackColor = Color.FromArgb(41, 39, 40); btnConnecting.ForeColor = Color.DimGray;
-            btnSetting.BackColor = Color.FromArgb(41, 39, 40); btnSetting.ForeColor = Color.DimGray;
-            btnController.BackColor = Color.FromArgb(41, 39, 40); btnController.ForeColor = Color.DimGray;
-            btnStatus.BackColor = Color.FromArgb(41, 39, 70); btnStatus.ForeColor = Color.Aquamarine;
-            btnHome.BackColor = Color.FromArgb(41, 39, 40); btnHome.ForeColor = Color.DimGray;
-            btnHistory.BackColor = Color.FromArgb(41, 39, 40); btnHistory.ForeColor = Color.DimGray;
-        }
-
-        private void btnHistory_Click(object sender, EventArgs e)
-        {
-            P1.Hide(); P2.Hide(); P3.Hide(); P4.Hide(); P5.Hide();
-            P7.Show(); P7.BringToFront();
-            lbltab.Text = "Report Page";
-            btnConnecting.BackColor = Color.FromArgb(41, 39, 40); btnConnecting.ForeColor = Color.DimGray;
-            btnSetting.BackColor = Color.FromArgb(41, 39, 40); btnSetting.ForeColor = Color.DimGray;
-            btnController.BackColor = Color.FromArgb(41, 39, 40); btnController.ForeColor = Color.DimGray;
-            btnStatus.BackColor = Color.FromArgb(41, 39, 40); btnStatus.ForeColor = Color.DimGray;
-            btnHome.BackColor = Color.FromArgb(41, 39, 40); btnHome.ForeColor = Color.DimGray;
-            btnHistory.BackColor = Color.FromArgb(41, 39, 70); btnHistory.ForeColor = Color.Aquamarine;
-        }
-
         private void btnHome_Click(object sender, EventArgs e)
         {
-            P1.Hide(); P2.Hide(); P3.Hide(); P4.Hide(); P7.Hide();
+            P1.Hide(); P2.Hide(); P3.Hide(); P4.Hide(); P7.Hide(); PMap.Hide();
             P5.Show(); P5.BringToFront();
             lbltab.Text = "Home Page";
             btnConnecting.BackColor = Color.FromArgb(41, 39, 40); btnConnecting.ForeColor = Color.DimGray;
@@ -489,6 +446,94 @@ namespace InterfacePC
             btnStatus.BackColor = Color.FromArgb(41, 39, 40); btnStatus.ForeColor = Color.DimGray;
             btnHome.BackColor = Color.FromArgb(41, 39, 70); btnHome.ForeColor = Color.Aquamarine;
             btnHistory.BackColor = Color.FromArgb(41, 39, 40); btnHistory.ForeColor = Color.DimGray;
+            btnMap.BackColor = Color.FromArgb(41, 39, 40); btnMap.ForeColor = Color.DimGray;
+        }
+
+        private void btnConnecting_Click(object sender, EventArgs e)
+        {
+            P5.Hide(); P2.Hide(); P3.Hide(); P4.Hide();P7.Hide(); PMap.Hide();
+            P1.Show(); P1.BringToFront();
+            lbltab.Text = "Connection Page";
+            btnConnecting.BackColor = Color.FromArgb(41, 39, 70);btnConnecting.ForeColor = Color.Aquamarine;
+            btnSetting.BackColor = Color.FromArgb(41, 39, 40); btnSetting.ForeColor = Color.DimGray;
+            btnController.BackColor = Color.FromArgb(41, 39, 40); btnController.ForeColor = Color.DimGray;
+            btnStatus.BackColor = Color.FromArgb(41, 39, 40); btnStatus.ForeColor = Color.DimGray;
+            btnHome.BackColor = Color.FromArgb(41, 39, 40); btnHome.ForeColor = Color.DimGray;
+            btnHistory.BackColor= Color.FromArgb(41, 39, 40); btnHistory.ForeColor = Color.DimGray;
+            btnMap.BackColor = Color.FromArgb(41, 39, 40); btnMap.ForeColor = Color.DimGray;
+        }
+
+        private void btnSetting_Click(object sender, EventArgs e)
+        {
+            P1.Hide(); P5.Hide(); P3.Hide(); P4.Hide(); P7.Hide(); PMap.Hide();
+            P2.Show(); P2.BringToFront();
+            lbltab.Text = "Settings Page";
+            btnConnecting.BackColor = Color.FromArgb(41, 39, 40); btnConnecting.ForeColor = Color.DimGray;
+            btnSetting.BackColor = Color.FromArgb(41, 39,70); btnSetting.ForeColor = Color.Aquamarine;
+            btnController.BackColor = Color.FromArgb(41, 39, 40); btnController.ForeColor = Color.DimGray;
+            btnStatus.BackColor = Color.FromArgb(41, 39, 40); btnStatus.ForeColor = Color.DimGray;
+            btnHome.BackColor = Color.FromArgb(41, 39, 40); btnHome.ForeColor = Color.DimGray;
+            btnHistory.BackColor = Color.FromArgb(41, 39, 40); btnHistory.ForeColor = Color.DimGray;
+            btnMap.BackColor = Color.FromArgb(41, 39, 40); btnMap.ForeColor = Color.DimGray;
+        }
+
+        private void btnController_Click(object sender, EventArgs e)
+        {
+            P1.Hide(); P2.Hide(); P5.Hide(); P4.Hide(); P7.Hide(); PMap.Hide();
+            P3.Show(); P3.BringToFront();
+            lbltab.Text = "Controller Page";
+            btnConnecting.BackColor = Color.FromArgb(41, 39, 40); btnConnecting.ForeColor = Color.DimGray;
+            btnSetting.BackColor = Color.FromArgb(41, 39, 40); btnSetting.ForeColor = Color.DimGray;
+            btnController.BackColor = Color.FromArgb(41, 39, 70); btnController.ForeColor = Color.Aquamarine;
+            btnStatus.BackColor = Color.FromArgb(41, 39, 40); btnStatus.ForeColor = Color.DimGray;
+            btnHome.BackColor = Color.FromArgb(41, 39, 40); btnHome.ForeColor = Color.DimGray;
+            btnHistory.BackColor = Color.FromArgb(41, 39, 40); btnHistory.ForeColor = Color.DimGray;
+            btnMap.BackColor = Color.FromArgb(41, 39, 40); btnMap.ForeColor = Color.DimGray;
+        }
+
+        private void btnStatus_Click(object sender, EventArgs e)
+        {
+            P1.Hide(); P2.Hide(); P3.Hide(); P5.Hide(); P7.Hide(); PMap.Hide();
+            P4.Show(); P4.BringToFront();
+            lbltab.Text = "Status Page";
+            btnConnecting.BackColor = Color.FromArgb(41, 39, 40); btnConnecting.ForeColor = Color.DimGray;
+            btnSetting.BackColor = Color.FromArgb(41, 39, 40); btnSetting.ForeColor = Color.DimGray;
+            btnController.BackColor = Color.FromArgb(41, 39, 40); btnController.ForeColor = Color.DimGray;
+            btnStatus.BackColor = Color.FromArgb(41, 39, 70); btnStatus.ForeColor = Color.Aquamarine;
+            btnHome.BackColor = Color.FromArgb(41, 39, 40); btnHome.ForeColor = Color.DimGray;
+            btnHistory.BackColor = Color.FromArgb(41, 39, 40); btnHistory.ForeColor = Color.DimGray;
+            btnMap.BackColor = Color.FromArgb(41, 39, 40); btnMap.ForeColor = Color.DimGray;
+        }
+
+        private void btnHistory_Click(object sender, EventArgs e)
+        {
+            P1.Hide(); P2.Hide(); P3.Hide(); P4.Hide(); P5.Hide(); PMap.Hide();
+            P7.Show(); P7.BringToFront();
+            lbltab.Text = "Report Page";
+            btnConnecting.BackColor = Color.FromArgb(41, 39, 40); btnConnecting.ForeColor = Color.DimGray;
+            btnSetting.BackColor = Color.FromArgb(41, 39, 40); btnSetting.ForeColor = Color.DimGray;
+            btnController.BackColor = Color.FromArgb(41, 39, 40); btnController.ForeColor = Color.DimGray;
+            btnStatus.BackColor = Color.FromArgb(41, 39, 40); btnStatus.ForeColor = Color.DimGray;
+            btnHome.BackColor = Color.FromArgb(41, 39, 40); btnHome.ForeColor = Color.DimGray;
+            btnHistory.BackColor = Color.FromArgb(41, 39, 70); btnHistory.ForeColor = Color.Aquamarine;
+            btnMap.BackColor = Color.FromArgb(41, 39, 40); btnMap.ForeColor = Color.DimGray;
+        }
+
+        private void btnMap_Click(object sender, EventArgs e)
+        {
+           
+            //drawMap();
+            P1.Hide(); P2.Hide(); P3.Hide(); P4.Hide(); P5.Hide(); P7.Hide();
+            PMap.Show(); PMap.BringToFront();
+            drawPreMap();
+            lbltab.Text = "Map Page";
+            btnConnecting.BackColor = Color.FromArgb(41, 39, 40); btnConnecting.ForeColor = Color.DimGray;
+            btnSetting.BackColor = Color.FromArgb(41, 39, 40); btnSetting.ForeColor = Color.DimGray;
+            btnController.BackColor = Color.FromArgb(41, 39, 40); btnController.ForeColor = Color.DimGray;
+            btnStatus.BackColor = Color.FromArgb(41, 39, 40); btnStatus.ForeColor = Color.DimGray;
+            btnHome.BackColor = Color.FromArgb(41, 39, 40); btnHome.ForeColor = Color.DimGray;
+            btnHistory.BackColor = Color.FromArgb(41, 39, 40); btnHistory.ForeColor = Color.DimGray;
+            btnMap.BackColor = Color.FromArgb(41, 39, 70); btnMap.ForeColor = Color.Aquamarine;
         }
 
         private void btnIntroduce_Click(object sender, EventArgs e)
@@ -548,7 +593,6 @@ namespace InterfacePC
         #endregion
 
         #region user logout
-
         private void panel1_MouseClick(object sender, MouseEventArgs e)
         {
             P6.Hide();
@@ -570,7 +614,7 @@ namespace InterfacePC
         }
         #endregion
 
-        //expand & collect menu
+        #region Expand & Collect menu
         private void button2_Click(object sender, EventArgs e)
         {
             panel5.Width = 169;
@@ -587,6 +631,7 @@ namespace InterfacePC
             P1.Location = new Point(120, 74); P2.Location = new Point(120, 74); P3.Location = new Point(120, 74);
             P4.Location = new Point(120, 74); P5.Location = new Point(120, 74); P7.Location = new Point(120, 74);
         }
+        #endregion
 
         #endregion
 
@@ -689,11 +734,51 @@ namespace InterfacePC
         }
         #endregion
 
+        #region Map Page
+        private void PMap_Paint(object sender, PaintEventArgs e)
+        {
+            myPen.Width = 1;
+        }
+
+        private void drawMap()
+        {
+            //label1.Text = angle.ToString();
+            //length = 10;angle = 270;
+            //endX = (int)(startX + Math.Cos(angle * .017453292519) * length );
+            //endY = (int)(startY + Math.Sin(angle * .017453292519) * length );//017453292519
+            Point[] points =
+            {
+                new Point(startX, startY),
+                new Point(endX,  endY)
+            };
+            map.DrawLines(myPen, points);
+            //startX = endX;startY = endY;
+        }
+
+        private void drawPreMap()
+        {
+            List<string> lines = File.ReadAllLines("map1").ToList();
+            int j = 0;
+            for (int i = 0; i < lines.Count; i++)
+            {
+                //label1.Text = Convert.ToInt16(Convert.ToDouble(lines[i].Substring(0, 1))).ToString();
+                //label1.Text = length.ToString();
+                Point[] points =
+                   {
+                    new Point(Convert.ToInt16(Convert.ToDouble(lines[i].Substring(0, 3))),Convert.ToInt16(Convert.ToDouble(lines[i].Substring(4, 3)))),
+                    new Point(Convert.ToInt16(Convert.ToDouble(lines[i].Substring(8, 3))),  Convert.ToInt16(Convert.ToDouble(lines[i].Substring(12, 3))))
+                   };
+                map.DrawLines(myPen, points);
+            }
+            preMapDone = 1;
+        }
+        #endregion
+
         private void timer1_Tick(object sender, EventArgs e)
         {
             set1 = Data[0];
             double tempTimeOut = tempHour * 60 + tempMinute - Data[3] * 60 - Data[2];
-            double tempTimeUp= Data[3] * 60 + Data[2]- tempHour * 60 - tempMinute;
+            double tempTimeUp = Data[3] * 60 + Data[2] - tempHour * 60 - tempMinute;
             if (timeOut == 1 && tempTimeOut > 0)
             {
                 lblhour.Text = string.Format("{0:00}", Convert.ToInt16(tempTimeOut / 60 - 0.5)) + " hrs";
