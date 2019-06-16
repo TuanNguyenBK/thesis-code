@@ -22,13 +22,13 @@ namespace InterfacePC
         Pen myPen = new Pen(Color.AntiqueWhite);
         Graphics map = null;
         static int startX = 0, startY = 0,startTmpX=0,startTmpY=0, endX = 0, endY = 0, endTmpX=0,endTmpY=0, preMapDone=0;
-        static int angle = 180, length = 0, increment = 0;
+        static int angle = 180, length = 0, increment = 0, comeHome=0;
         float rad = 0;
         float Kp = 0, Ki = 0, Kd = 0;
         int stopTemp = 0, timeOut=0,timeUp=0;
         string Time = "0",set_point="", Mode = "a",startHour="00",startMin="00",data, nhan = "0";
         double set = 0, set1 = 0, time = 0;
-        string Tam = "",battery="000",timer="000",container="",minute="00",hour="00",day="00",month="00",second="00";
+        string Tam = "",battery="000",timer="000",container="",mapFlat="",minute="00",hour="00",day="00",month="00",second="00";
         double[] Data = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         double[] Data_2 = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         double tempHour, tempMinute;
@@ -57,7 +57,7 @@ namespace InterfacePC
             UART.BaudRate = 115200;
             UART.Parity = Parity.None;
             UART.StopBits = StopBits.One;
-            timer1.Interval = 300;
+            timer1.Interval = 300;timerForSentCoordinate.Interval = 400;
             //initial state of settings
             cbxLevel.Text = "Low";cbxTime.Text = "None";
             btnChay.Enabled = false;
@@ -104,9 +104,6 @@ namespace InterfacePC
             {
                 //lbNhietDo.Text = UART.ReadTo("\r");
                 Tam = UART.ReadTo("\r");//nhan du lieu tu vdk gui len
-                //label1.Text = Tam.Substring(1,2);
-                //label1.Text = Tam;
-                //read value
                 battery = Tam.Substring(1, 3);//tach so 
                 container = Tam.Substring(4,3);
                 //read time 
@@ -115,6 +112,8 @@ namespace InterfacePC
                 hour = Tam.Substring(11, 2);
                 day = Tam.Substring(13, 2);
                 month = Tam.Substring(15, 2);   
+                //Send coordinate of machine
+                mapFlat= Tam.Substring(17, 1);
                 ////trans to double
                 Data[0] = Convert.ToDouble(battery);
                 Data[1] = Convert.ToDouble(container);
@@ -134,8 +133,7 @@ namespace InterfacePC
                 txtHr.Text = hour;
                 txtMin.Text = minute;
                 txtSec.Text = second;
-                if (Tam.Substring(17, 1) == "s" && stopTemp == 1)
-                { stopTemp = 0; btnDung_Click(sender,e);  }
+
                 rad = (float)(angle * .017453292519);
                 endX = (int)(startX + (Math.Cos(rad) * length/2)+0.5);
                 endY = (int)(startY + (Math.Sin(rad) * length/2)+0.5);//017453292519
@@ -149,6 +147,9 @@ namespace InterfacePC
                 if(preMapDone==1)drawMap();
                 startX = endX; startY = endY;
 
+                if (Tam.Substring(17, 1) == "s" && stopTemp == 1)
+                { stopTemp = 0; btnDung_Click(sender, e); }
+                if (mapFlat == "C") UART.Write("C" + string.Format("{0:000}", endX) + string.Format("{0:000}", endY) + "00");
                 BeginInvoke(new Action(() =>
                 {
                 }));
@@ -190,6 +191,7 @@ namespace InterfacePC
                 btnConnect.BackColor = Color.Green;
                 lblwarning.Text = "PLEASE SELECT YOUR OPTIONS."; lblwarn.Text = "";lblwarning.ForeColor = Color.Chocolate;
                 timer1.Enabled = true;
+                timerForSentCoordinate.Enabled = true;
 
                 startX = PMap.Width / 2; startY = PMap.Height / 2;preMapDone = 0;
                 //startTmpX = PMap.Width / 2; startTmpY = PMap.Height / 2;
@@ -198,7 +200,7 @@ namespace InterfacePC
             }
             else
             {
-                timer1.Enabled = false;
+                timer1.Enabled = false;timerForSentCoordinate.Enabled = false;
                 btnConnect.Text = "Connect";
                 stt.Text = "THE MACHINE IS DISCONNECTED.";
                 stt.ForeColor = Color.Red;
@@ -776,7 +778,7 @@ namespace InterfacePC
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            set1 = Data[0];
+            set1 = Data[0]; 
             double tempTimeOut = tempHour * 60 + tempMinute - Data[3] * 60 - Data[2];
             double tempTimeUp = Data[3] * 60 + Data[2] - tempHour * 60 - tempMinute;
             if (timeOut == 1 && tempTimeOut > 0)
@@ -795,6 +797,11 @@ namespace InterfacePC
                 //label1.Text = string.Format("{0:00}", Convert.ToInt16(tempTimeUp * 100 / time - 0.5));
             }
             else char_container.Value = 0;
+        }
+
+        private void timerForSentCoordinate_Tick(object sender, EventArgs e)
+        {
+            
         }
     }
 }

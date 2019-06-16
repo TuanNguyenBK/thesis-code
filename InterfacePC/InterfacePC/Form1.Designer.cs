@@ -139,6 +139,7 @@
             this.txtstatus3 = new System.Windows.Forms.RichTextBox();
             this.PMap = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
+            this.timerForSentCoordinate = new System.Windows.Forms.Timer(this.components);
             this.mode.SuspendLayout();
             this.P3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox28)).BeginInit();
@@ -1687,6 +1688,10 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "label1";
             // 
+            // timerForSentCoordinate
+            // 
+            this.timerForSentCoordinate.Tick += new System.EventHandler(this.timerForSentCoordinate_Tick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -1891,5 +1896,6 @@
         private System.Windows.Forms.Button btnMap;
         private System.Windows.Forms.Panel PMap;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Timer timerForSentCoordinate;
     }
 }

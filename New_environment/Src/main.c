@@ -35,11 +35,14 @@ signed long Err2=0,pre_Err2=0,pre_pre_Err2=0,pros2=0,loop=0;
 signed long Err3=0,pre_Err3=0,pre_pre_Err3=0,pros3=0,loop1=0;
 
 int start=0,start_button=0,run=0,sample_count=0,au=0,motor_left=0,motor_right=0,motor_straight=0,motor_back=0;
-int	Deg_90_left=0,Deg_90_right=0,left=0,right=0,a=0,stop1=1,stop2=0,report=0,b=0,cont=0;
+int	Deg_90_left=0,Deg_90_right=0,left=0,right=0,a=0,stop1=1,stop2=0,report=0,b=0,cont=0,come_back_home=0;
 int stuck=0,stuck_back=0,new_setpoint_position=0,zigzac_flat=0,start_zigzac=1, loop_once=0,loop_once_1=0;
 uint16_t stop_hour=0,stop_minute=0;
 uint16_t adc_value,adc,loop_tmp=0;
-uint16_t length=0, angle=0,angle_tmp=0;
+uint16_t length=0, angle=0,angle_tmp=0,delta_pulse=0;
+uint16_t currentX=0,currentY=0,distanceX=0,distanceY=0;
+uint16_t startX=161,startY=211;
+int flatX=0,flatY=0;
 
 	//RTC DS3231
 #define DS3231_ADD (0x68<<1)
@@ -117,6 +120,7 @@ void Find_Wall(void);
 void Check_Start_Button(void);
 void Settings_agr(void);
 void Get_Coordinate(void);
+void Come_Home(void);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 uint8_t RTC_BCD2DEC(uint8_t e);
@@ -318,7 +322,8 @@ int main(void)
 				{			
 					duty5=tmp_duty5;duty4=90;
 					if(zigzac_flat==0)Find_Wall();
-					else Zigziag_Mode();
+					else if(come_back_home==0) Zigziag_Mode();
+					else Come_Home(); 
 				}
 				//* Manual *//
 				if(au==0)
@@ -343,9 +348,13 @@ int Stuck_For_Straight(){
 int Stuck_For_Back(void){
 		if(count_stuck>150){
 			if(Deg_90_left==1&&Pulse1<des_position_left){
-				stuck_back=1;new_setpoint_position=1;tmp_position_left=des_position_left-Pulse1;Stop();}
+				stuck_back=1;new_setpoint_position=1;tmp_position_left=des_position_left-Pulse1;
+				if(angle_tmp<Pulse1*9/70)angle_tmp=angle_tmp+360;
+				angle_tmp=angle_tmp-Pulse1*9/70;Stop();}
 			else if(Deg_90_right==1&&Pulse<des_position_right){
-				stuck_back=1;new_setpoint_position=1;tmp_position_right=des_position_right-Pulse;Stop();}
+				stuck_back=1;new_setpoint_position=1;tmp_position_right=des_position_right-Pulse;
+				angle_tmp=angle_tmp+Pulse*9/75;	
+				if(angle_tmp>360)angle_tmp=angle_tmp-360;Stop();}
 			else {stuck_back=0;new_setpoint_position=0;}
 			count_stuck=0;
 		}
@@ -355,10 +364,26 @@ int Stuck_For_Back(void){
 
 void Get_Coordinate(void){
 	//length = pulse1*6.5*3.14/400;
-	if(count_sample_time>5)
+	if(count_sample_time>20)
 	{
-			if(motor_straight==1){length = pulse1*6.5*3.14/400; angle = angle_tmp;}
-			pulse1=0;count_sample_time=0;
+			if(motor_straight==1){
+					if(pulse1>pulse){
+							delta_pulse=pulse1-pulse;
+							angle_tmp=angle_tmp+delta_pulse*9/73;
+							if(angle_tmp>360)angle_tmp=angle_tmp-360;}
+					if(pulse>pulse1){
+							delta_pulse=pulse-pulse1;
+							if(angle_tmp<delta_pulse*9/73)angle_tmp=angle_tmp+360;
+							angle_tmp=angle_tmp-delta_pulse*9/73;}
+					length = pulse1*6.5*3.14/400;
+					angle = angle_tmp;}
+			else if(motor_left==1){
+					if(angle_tmp<pulse1*9/70)angle_tmp=angle_tmp+360;
+					angle_tmp=angle_tmp-pulse1*9/70;}
+			else if(motor_right==1){
+					angle_tmp=angle_tmp+pulse*9/75;	
+					if(angle_tmp>360)angle_tmp=angle_tmp-360;}
+			pulse1=0;pulse=0;count_sample_time=0;
 	}
 }
 
@@ -392,14 +417,20 @@ void Analyze_RecieveArray(void)
 		//*Stop Robot*//
 		if(receive_data[0]=='D'||start_button==0)
 				{
-					receive_data[0]=0;
+					receive_data[0]=0;come_back_home=0;
 					start=0;start_button=0;stop1=1;stop2=0;
 					Deg_90_left=0;Deg_90_right=0;zigzac_flat=0;
 					Stop();run=0;a=0;left=0;right=0;au=0;time_out=0;
 					duty5=0;tmp_duty5=300;
 					duty4=0;tmp_duty4=90;						
 				}
-		send_data[16]='0';
+			send_data[16]='0';
+			if(come_back_home==1)send_data[16]='C';
+			if(receive_data[0]=='C')
+				{
+					currentX=(receive_data[1]-48)*100+(receive_data[2]-48)*10+(receive_data[3]-48);
+					currentY=(receive_data[4]-48)*100+(receive_data[5]-48)*10+(receive_data[6]-48);
+				}
 		if(au==1)
 		{
 					if((DS3231.hour==start_hour&&DS3231.min==start_minute)||(start_hour==0&&start_minute==0))
@@ -427,7 +458,7 @@ void Send_Data(void)
 	
 		send_data[23]= '\r';			//send_data[17]= '\r';	
 		HAL_UART_Transmit_IT(&huart2,(uint8_t  *)send_data,24);
-		HAL_Delay(50);
+		HAL_Delay(50);length=0;
 }
 
 void Check_Start_Button(void)
@@ -457,7 +488,7 @@ void Settings_agr (void)
 }
 void Find_Wall(void)
 {
-	Sonic();
+	Sonic();		
 	if( HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1) == 0 && HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_9) == 0){
 		loop_tmp=0;
 		if(Distance< 3){zigzac_flat=1;Stop();HAL_Delay(1000);start_zigzac=1;}
@@ -512,7 +543,8 @@ void Find_Wall(void)
 }
 
 void Zigziag_Mode(void)
-{						Sonic();	
+{						
+						Sonic();
 						if(Stuck_For_Back()==1)
 						{
 							Stop();
@@ -526,8 +558,8 @@ void Zigziag_Mode(void)
 										if(stop1==1)
 											 {Stop();HAL_Delay(200);Stop();stop1=0;
 												//if(C==0&&D==0){Stop();stop1=0;}
-												if(count_right_wall>30){
-													a=1-a;count_right_wall=0;count_left_wall=0;}
+												if(count_right_wall>20){
+													come_back_home=1;a=1-a;count_right_wall=0;count_left_wall=0;}
 												if(a==0){left=1;right=0;count_right_wall=0;}								//* co quay trai, phai cua xe
 												else{left=0;right=1;count_left_wall=0;}														
 											 }
@@ -572,7 +604,31 @@ void Zigziag_Mode(void)
 										}	
 									}	
 }
-	
+
+void Come_Home(void)
+{
+			send_data[16]='C';
+			if(left==1){Deg_90_left=1;}
+			else if(right==1){Deg_90_right=1;}
+			else if(flatY==0){
+					if(currentY>startY)distanceY=currentY-startY;
+					else if (startY>currentY)distanceY=startY-currentY;
+					if(distanceY>20)Go_Straight();
+					else {flatY=1;Stop();HAL_Delay(200); left=1;}
+			}
+			else{
+					if(currentX>startX)distanceX=currentX-startX;
+					else if (startX>currentX)distanceX=startX-currentX;
+					if(distanceX>20)Go_Straight();
+					else {come_back_home=0;Stop();HAL_Delay(200);
+							start=0;start_button=0;stop1=1;stop2=0;
+							Deg_90_left=0;Deg_90_right=0;zigzac_flat=0;
+							run=0;a=0;left=0;right=0;au=0;time_out=0;
+							duty5=0;tmp_duty5=300;
+							duty4=0;tmp_duty4=90;	
+					}
+			}
+}	
 
 void Go_Straight (void)
 {
@@ -677,7 +733,7 @@ loop1=1;Output3=110;
 }
 else if(Err3>-10&&loop1==1)
 {
-angle_tmp=angle_tmp+Pulse*9/70;	
+angle_tmp=angle_tmp+Pulse*9/75;	
 if(angle_tmp>360)angle_tmp=angle_tmp-360;
 pros3=0;Deg_90_right=0;cont++;new_setpoint_position=0;
 duty0=0;right=0;loop1=0;HAL_Delay(90);Stop();}
@@ -720,7 +776,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin==GPIO_PIN_5)
 		{
-			if(motor_back==1||motor_straight==1||motor_left==1||motor_right==1){pulse++;p++;}
+			if(motor_back==1||motor_straight==1||motor_right==1){pulse++;p++;}
 			if(Deg_90_right==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_11) == 1)Pulse++;
 			if(Deg_90_right==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_11) == 0)Pulse--;
 					//while(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0));
@@ -728,7 +784,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		if(GPIO_Pin==GPIO_PIN_4)
 		{
 			//pulse1++;
-			if(motor_back==1||motor_straight==1||motor_left==1||motor_right==1){pulse1++;p1++;}
+			if(motor_back==1||motor_straight==1||motor_left==1){pulse1++;p1++;}
 			if(Deg_90_left==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12) == 0)Pulse1++;
 			if(Deg_90_left==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12) == 1)Pulse1--;
 		}	
