@@ -149,13 +149,10 @@ namespace InterfacePC
 
                 if (Tam.Substring(17, 1) == "s" && stopTemp == 1)
                 { stopTemp = 0; btnDung_Click(sender, e); }
-                if (mapFlat == "C")
-                {
-                    count++;
-                    if (count >= 5) {
+                if (mapFlat == "C"&&count==1)
+                { 
                         UART.Write("C" + string.Format("{0:000}", endX) + string.Format("{0:000}", endY) + "00");
                         count = 0;
-                    }
                 }
                 BeginInvoke(new Action(() =>
                 {

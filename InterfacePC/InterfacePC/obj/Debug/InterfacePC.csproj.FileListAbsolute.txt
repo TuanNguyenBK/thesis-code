@@ -97,3 +97,27 @@ C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfaceP
 C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.CopyComplete
 C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfacePC.exe
 C:\Users\admin\Desktop\current code\InterfacePC\InterfacePC\obj\Debug\InterfacePC.pdb
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\bin\Debug\InterfacePC.exe
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\bin\Debug\InterfacePC.pdb
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\bin\Debug\ZedGraph.dll
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\bin\Debug\ZedGraph.Web.dll
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csprojAssemblyReference.cache
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.Form1.resources
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.Properties.Resources.resources
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.GenerateResource.cache
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.CoreCompileInputs.cache
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.CopyComplete
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.exe
+D:\BK\THESIS\github\Latest-code-\InterfacePC\InterfacePC\obj\Debug\InterfacePC.pdb
+C:\Users\Administrator\Desktop\InterfacePC\InterfacePC\bin\Debug\InterfacePC.exe
+C:\Users\Administrator\Desktop\InterfacePC\InterfacePC\bin\Debug\InterfacePC.pdb
+C:\Users\Administrator\Desktop\InterfacePC\InterfacePC\bin\Debug\ZedGraph.dll
+C:\Users\Administrator\Desktop\InterfacePC\InterfacePC\bin\Debug\ZedGraph.Web.dll
+C:\Users\Administrator\Desktop\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csprojAssemblyReference.cache
+C:\Users\Administrator\Desktop\InterfacePC\InterfacePC\obj\Debug\InterfacePC.Form1.resources
+C:\Users\Administrator\Desktop\InterfacePC\InterfacePC\obj\Debug\InterfacePC.Properties.Resources.resources
+C:\Users\Administrator\Desktop\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.GenerateResource.cache
+C:\Users\Administrator\Desktop\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.CoreCompileInputs.cache
+C:\Users\Administrator\Desktop\InterfacePC\InterfacePC\obj\Debug\InterfacePC.csproj.CopyComplete
+C:\Users\Administrator\Desktop\InterfacePC\InterfacePC\obj\Debug\InterfacePC.exe
+C:\Users\Administrator\Desktop\InterfacePC\InterfacePC\obj\Debug\InterfacePC.pdb

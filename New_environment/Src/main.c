@@ -41,8 +41,8 @@ uint16_t stop_hour=0,stop_minute=0;
 uint16_t adc_value,adc,loop_tmp=0;
 uint16_t length=0, angle=0,angle_tmp=0,delta_pulse=0;
 uint16_t currentX=0,currentY=0,distanceX=0,distanceY=0;
-uint16_t startX=161,startY=211;
-int flatX=0,flatY=0,done=1;
+uint16_t startX=161,startY=211,distance_home=0;
+int flatX=0,flatY=0,done=0;
 
 	//RTC DS3231
 #define DS3231_ADD (0x68<<1)
@@ -314,7 +314,7 @@ int main(void)
 		Analyze_RecieveArray();
 		Check_Start_Button();	
 		Send_Data();
-		Settings_agr();
+		Settings_agr();	
 		if (start==1)
 			{		
 				//* Auto *//
@@ -368,7 +368,7 @@ void Get_Coordinate(void){
 	{
 			if(motor_straight==1){
 					length = pulse1*6.5*3.14/400;
-					if(come_back_home==1){length=length+1;}
+					if(come_back_home==1){distance_home=distance_home+length;}
 					if(pulse1>pulse){
 							delta_pulse=pulse1-pulse;
 							angle_tmp=angle_tmp+delta_pulse*9/73;
@@ -427,6 +427,7 @@ void Analyze_RecieveArray(void)
 				}
 			send_data[16]='0';
 			if(come_back_home==1)send_data[16]='C';
+			if(done==1){send_data[16]='s';done=0;}
 			if(receive_data[0]=='C')
 				{
 					currentX=(receive_data[1]-48)*100+(receive_data[2]-48)*10+(receive_data[3]-48);
@@ -559,7 +560,7 @@ void Zigziag_Mode(void)
 										if(stop1==1)
 											 {Stop();HAL_Delay(200);Stop();stop1=0;
 												//if(C==0&&D==0){Stop();stop1=0;}
-												if(count_right_wall>15){
+												if(count_right_wall>15&&count_left_wall>15){
 													come_back_home=1;a=1-a;count_right_wall=0;count_left_wall=0;}
 												if(a==0){left=1;right=0;count_right_wall=0;}								//* co quay trai, phai cua xe
 												else{left=0;right=1;count_left_wall=0;}														
@@ -584,9 +585,9 @@ void Zigziag_Mode(void)
 											else if (cont>=3)
 											{cont=0;a=1-a;stop1=1;}										//*  sau khi quay xong 2 lan, bat co` trai phai
 											else if (Deg_90_left==0){									//* cho xe di thang sau khi hoan thanh sau 2 lan quay					
-												//Sonic_Left();	
+												Sonic_Left();	
 												Go_Straight();	
-												//if(Distance_left<9)count_left_wall++;
+												if(Distance_left<10)count_left_wall++;
 											}
 										}
 										else 		//* xe quay phai
@@ -613,15 +614,15 @@ void Come_Home(void)
 			else if(flatY==0){
 					if(currentY>startY)distanceY=currentY-startY;
 					else if (startY>currentY)distanceY=startY-currentY;
-					if(distanceY<20){flatY=1;Stop();HAL_Delay(500); left=1;}
+					if(distanceY-distance_home<10){distance_home=0;flatY=1;Stop();HAL_Delay(500); left=1;}
 					else Go_Straight();
 			}
 			else{
 					if(currentX>startX)distanceX=currentX-startX;
 					else if (startX>currentX)distanceX=startX-currentX;
-					if(distanceX<20){
-							flatY=0;flatX=0;
-							come_back_home=0;Stop();HAL_Delay(200);send_data[16]='s';
+					if(distanceX-distance_home<10){
+							flatY=0;flatX=0;distance_home=0;
+							come_back_home=0;Stop();HAL_Delay(200);done=1;
 							start=0;start_button=0;stop1=1;stop2=0;
 							Deg_90_left=0;Deg_90_right=0;zigzac_flat=0;
 							run=0;a=0;left=0;right=0;au=0;time_out=0;
@@ -739,7 +740,7 @@ else if(Err3>-10&&loop1==1)
 angle_tmp=angle_tmp+Pulse*9/75;	
 if(angle_tmp>360)angle_tmp=angle_tmp-360;
 pros3=0;Deg_90_right=0;cont++;new_setpoint_position=0;
-duty0=0;right=0;loop1=0;HAL_Delay(90);Stop();}
+duty0=0;right=0;loop1=0;HAL_Delay(100);Stop();}
 Output3 = Output3+Kp_Pos_1*Err2+Ki_Pos_1*Sampling_time*(Err2+pre_Err2)/(2000)+Kd_Pos_1*(Err2-2*pre_Err2+pre_pre_Err2)*inv_Sampling_time;
 if (Output3 >175) Output3=175;
 if (Output3 <=0) Output3=0;
@@ -779,7 +780,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin==GPIO_PIN_5)
 		{
-			if(motor_back==1||motor_straight==1||motor_right==1){pulse++;p++;}
+			if(motor_back==1||motor_straight==1){pulse++;p++;}
+			if(motor_right==1){pulse++;}
 			if(Deg_90_right==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_11) == 1)Pulse++;
 			if(Deg_90_right==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_11) == 0)Pulse--;
 					//while(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0));
@@ -787,7 +789,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		if(GPIO_Pin==GPIO_PIN_4)
 		{
 			//pulse1++;
-			if(motor_back==1||motor_straight==1||motor_left==1){pulse1++;p1++;}
+			if(motor_back==1||motor_straight==1){pulse1++;p1++;}
+			if(motor_left==1){pulse1++;}
 			if(Deg_90_left==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12) == 0)Pulse1++;
 			if(Deg_90_left==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12) == 1)Pulse1--;
 		}	
@@ -868,8 +871,8 @@ void Sonic_Left(void)
          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_RESET);        
          time_left=0;
 
-      while (HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_9) == 0);
-      while (HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_9))
+      while (HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_8) == 0);
+      while (HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_8))
       {
          time_left++;
          delay_us(2); // delay 2 us
@@ -1130,6 +1133,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+	
+	  /*Configure GPIO pins : PD8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PA7 PA10 PA15 */
   GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_10;
