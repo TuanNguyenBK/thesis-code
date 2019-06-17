@@ -1690,7 +1690,7 @@
             // 
             // timerForSentCoordinate
             // 
-            this.timerForSentCoordinate.Tick += new System.EventHandler(this.timerForSentCoordinate_Tick);
+         
             // 
             // Form1
             // 

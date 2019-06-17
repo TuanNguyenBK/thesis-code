@@ -42,7 +42,7 @@ uint16_t adc_value,adc,loop_tmp=0;
 uint16_t length=0, angle=0,angle_tmp=0,delta_pulse=0;
 uint16_t currentX=0,currentY=0,distanceX=0,distanceY=0;
 uint16_t startX=161,startY=211;
-int flatX=0,flatY=0;
+int flatX=0,flatY=0,done=1;
 
 	//RTC DS3231
 #define DS3231_ADD (0x68<<1)
@@ -364,9 +364,11 @@ int Stuck_For_Back(void){
 
 void Get_Coordinate(void){
 	//length = pulse1*6.5*3.14/400;
-	if(count_sample_time>20)
+	if(count_sample_time>15)
 	{
 			if(motor_straight==1){
+					length = pulse1*6.5*3.14/400;
+					if(come_back_home==1){length=length+1;}
 					if(pulse1>pulse){
 							delta_pulse=pulse1-pulse;
 							angle_tmp=angle_tmp+delta_pulse*9/73;
@@ -375,7 +377,6 @@ void Get_Coordinate(void){
 							delta_pulse=pulse-pulse1;
 							if(angle_tmp<delta_pulse*9/73)angle_tmp=angle_tmp+360;
 							angle_tmp=angle_tmp-delta_pulse*9/73;}
-					length = pulse1*6.5*3.14/400;
 					angle = angle_tmp;}
 			else if(motor_left==1){
 					if(angle_tmp<pulse1*9/70)angle_tmp=angle_tmp+360;
@@ -558,7 +559,7 @@ void Zigziag_Mode(void)
 										if(stop1==1)
 											 {Stop();HAL_Delay(200);Stop();stop1=0;
 												//if(C==0&&D==0){Stop();stop1=0;}
-												if(count_right_wall>20){
+												if(count_right_wall>15){
 													come_back_home=1;a=1-a;count_right_wall=0;count_left_wall=0;}
 												if(a==0){left=1;right=0;count_right_wall=0;}								//* co quay trai, phai cua xe
 												else{left=0;right=1;count_left_wall=0;}														
@@ -599,7 +600,7 @@ void Zigziag_Mode(void)
 											else if (Deg_90_right==0){	
 												Sonic_Right();												
 												Go_Straight();
-												if(Distance_right<9)count_right_wall++;
+												if(Distance_right<10)count_right_wall++;
 											}
 										}	
 									}	
@@ -607,26 +608,28 @@ void Zigziag_Mode(void)
 
 void Come_Home(void)
 {
-			send_data[16]='C';
 			if(left==1){Deg_90_left=1;}
 			else if(right==1){Deg_90_right=1;}
 			else if(flatY==0){
 					if(currentY>startY)distanceY=currentY-startY;
 					else if (startY>currentY)distanceY=startY-currentY;
-					if(distanceY>20)Go_Straight();
-					else {flatY=1;Stop();HAL_Delay(200); left=1;}
+					if(distanceY<20){flatY=1;Stop();HAL_Delay(500); left=1;}
+					else Go_Straight();
 			}
 			else{
 					if(currentX>startX)distanceX=currentX-startX;
 					else if (startX>currentX)distanceX=startX-currentX;
-					if(distanceX>20)Go_Straight();
-					else {come_back_home=0;Stop();HAL_Delay(200);
+					if(distanceX<20){
+							flatY=0;flatX=0;
+							come_back_home=0;Stop();HAL_Delay(200);send_data[16]='s';
 							start=0;start_button=0;stop1=1;stop2=0;
 							Deg_90_left=0;Deg_90_right=0;zigzac_flat=0;
 							run=0;a=0;left=0;right=0;au=0;time_out=0;
 							duty5=0;tmp_duty5=300;
 							duty4=0;tmp_duty4=90;	
 					}
+					else Go_Straight();
+					
 			}
 }	
 

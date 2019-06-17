@@ -22,7 +22,7 @@ namespace InterfacePC
         Pen myPen = new Pen(Color.AntiqueWhite);
         Graphics map = null;
         static int startX = 0, startY = 0,startTmpX=0,startTmpY=0, endX = 0, endY = 0, endTmpX=0,endTmpY=0, preMapDone=0;
-        static int angle = 180, length = 0, increment = 0, comeHome=0;
+        static int angle = 180, length = 0, increment = 0, comeHome=0, count=0;
         float rad = 0;
         float Kp = 0, Ki = 0, Kd = 0;
         int stopTemp = 0, timeOut=0,timeUp=0;
@@ -57,7 +57,7 @@ namespace InterfacePC
             UART.BaudRate = 115200;
             UART.Parity = Parity.None;
             UART.StopBits = StopBits.One;
-            timer1.Interval = 300;timerForSentCoordinate.Interval = 400;
+            timer1.Interval = 500;timerForSentCoordinate.Interval = 400;
             //initial state of settings
             cbxLevel.Text = "Low";cbxTime.Text = "None";
             btnChay.Enabled = false;
@@ -149,7 +149,14 @@ namespace InterfacePC
 
                 if (Tam.Substring(17, 1) == "s" && stopTemp == 1)
                 { stopTemp = 0; btnDung_Click(sender, e); }
-                if (mapFlat == "C") UART.Write("C" + string.Format("{0:000}", endX) + string.Format("{0:000}", endY) + "00");
+                if (mapFlat == "C")
+                {
+                    count++;
+                    if (count >= 5) {
+                        UART.Write("C" + string.Format("{0:000}", endX) + string.Format("{0:000}", endY) + "00");
+                        count = 0;
+                    }
+                }
                 BeginInvoke(new Action(() =>
                 {
                 }));
@@ -778,7 +785,8 @@ namespace InterfacePC
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            set1 = Data[0]; 
+            set1 = Data[0];
+          
             double tempTimeOut = tempHour * 60 + tempMinute - Data[3] * 60 - Data[2];
             double tempTimeUp = Data[3] * 60 + Data[2] - tempHour * 60 - tempMinute;
             if (timeOut == 1 && tempTimeOut > 0)
@@ -799,10 +807,7 @@ namespace InterfacePC
             else char_container.Value = 0;
         }
 
-        private void timerForSentCoordinate_Tick(object sender, EventArgs e)
-        {
-            
-        }
+
     }
 }
 
