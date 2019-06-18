@@ -122,23 +122,23 @@ namespace InterfacePC
                 Data[4] = Convert.ToDouble(day);
                 Data[5] = Convert.ToDouble(month);
                 //read coordinates of machine
-                Data[6] = Convert.ToDouble(Tam.Substring(18, 3)); //length
-                Data[7] = Convert.ToDouble(Tam.Substring(21, 3)); //angle
+                Data[6] = Convert.ToDouble(Tam.Substring(18, 3)); //currentX
+                Data[7] = Convert.ToDouble(Tam.Substring(21, 3)); //currentY
                 ////trans to int 
                 if (Data[0]<=100) char_battery.Value = Convert.ToInt16(Data[0]);
-                length = Convert.ToInt16(Data[6]);        //scale 2:1
-                angle = Convert.ToInt16(Data[7]);
+                endX = Convert.ToInt16(Data[6]);        
+                endY = Convert.ToInt16(Data[7]);
                 //if (Data[1] <= 100) char_container.Value = Convert.ToInt16(Data[1]);
                 //show time
                 txtHr.Text = hour;
                 txtMin.Text = minute;
                 txtSec.Text = second;
 
-                rad = (float)(angle * .017453292519);
-                endX = (int)(startX + (Math.Cos(rad) * length/2)+0.5);
-                endY = (int)(startY + (Math.Sin(rad) * length/2)+0.5);//017453292519
-                if (endX < 0) endX = 0;if (endY < 0) endY = 0;
-
+                //rad = (float)(angle * .017453292519);
+                //endX = (int)(startX + (Math.Cos(rad) * length/2)+0.5);
+                //endY = (int)(startY + (Math.Sin(rad) * length/2)+0.5);//017453292519
+                //if (endX < 0) endX = 0;if (endY < 0) endY = 0;
+            
                 StreamWriter write = new StreamWriter("map1", true);      //save coordinates of map
                 write.WriteLine(string.Format("{0:000}",startX) + "-" +
                    string.Format("{0:000}", startY) + "-" + string.Format("{0:000}", endX) + 
@@ -149,11 +149,14 @@ namespace InterfacePC
 
                 if (Tam.Substring(17, 1) == "s" && stopTemp == 1)
                 { stopTemp = 0; btnDung_Click(sender, e); }
-                if (mapFlat == "C"&&count==1)
-                { 
-                        UART.Write("C" + string.Format("{0:000}", endX) + string.Format("{0:000}", endY) + "00");
-                        count = 0;
-                }
+                //if (mapFlat == "C")
+                //{
+                //    count++;
+                //    if (count >= 5) {
+                //        UART.Write("C" + string.Format("{0:000}", endX) + string.Format("{0:000}", endY) + "00");
+                //        count = 0;
+                //    }
+                //}
                 BeginInvoke(new Action(() =>
                 {
                 }));
