@@ -396,8 +396,8 @@ void Get_Coordinate(void)
 					if(angle_tmp>360)angle_tmp=angle_tmp-360;}
 			
 			rad=angle* 0.017453292519;
-			currentX=(uint16_t)(startX + (cos(rad) * length/2));	//scale 2:1
-			currentY=(uint16_t)(startY + (sin(rad) * length/2));
+			currentX=(uint16_t)(startX + (cos(rad) * length/2)+0.5);	//scale 2:1
+			currentY=(uint16_t)(startY + (sin(rad) * length/2)+0.5);
 			startX = currentX; startY = currentY;
 			pulse1=0;pulse=0;count_sample_time=0;
 	}
@@ -732,7 +732,7 @@ else if(Err2>-20&&loop==1)
 if(angle_tmp<Pulse1*9/77)angle_tmp=angle_tmp+360;
 angle_tmp=angle_tmp-Pulse1*9/77;
 pros2=0;Deg_90_left=0;cont++;new_setpoint_position=0;
-duty2=0;left=0;loop=0;HAL_Delay(200);Stop();}
+duty2=0;left=0;loop=0;HAL_Delay(100);Stop();}
 
 Output2 = Output2+Kp_Pos*Err2+Ki_Pos*Sampling_time*(Err2+pre_Err2)/(2000)+Kd_Pos*(Err2-2*pre_Err2+pre_pre_Err2)*inv_Sampling_time;
 if (Output2 >180) Output2=180;
@@ -761,7 +761,7 @@ else if(Err3>-20&&loop1==1)
 angle_tmp=angle_tmp+Pulse*9/79;	
 if(angle_tmp>360)angle_tmp=angle_tmp-360;
 pros3=0;Deg_90_right=0;cont++;new_setpoint_position=0;
-duty0=0;right=0;loop1=0;HAL_Delay(200);Stop();}
+duty0=0;right=0;loop1=0;HAL_Delay(100);Stop();}
 
 Output3 = Output3+Kp_Pos_1*Err2+Ki_Pos_1*Sampling_time*(Err2+pre_Err2)/(2000)+Kd_Pos_1*(Err2-2*pre_Err2+pre_pre_Err2)*inv_Sampling_time;
 if (Output3 >175) Output3=175;
@@ -804,7 +804,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin==GPIO_PIN_5)
 		{
-			if(motor_back==1||motor_straight==1||motor_right==1){PULSE++;pulse++;p++;}
+			if(motor_straight==1)pulse++;
+			if(motor_back==1||motor_straight==1||motor_right==1){PULSE++;p++;}
 			if(Deg_90_right==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_11) == 1)Pulse++;
 			if(Deg_90_right==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_11) == 0)Pulse--;
 					//while(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0));
@@ -812,7 +813,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		if(GPIO_Pin==GPIO_PIN_4)
 		{
 			//pulse1++;
-			if(motor_back==1||motor_straight==1||motor_left==1){PULSE1++;pulse1++;p1++;}
+			if(motor_straight==1)pulse1++;
+			if(motor_back==1||motor_straight==1||motor_left==1){PULSE1++;p1++;}
 			if(Deg_90_left==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12) == 0)Pulse1++;
 			if(Deg_90_left==1&&HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12) == 1)Pulse1--;
 		}	
